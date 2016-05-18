@@ -43,6 +43,20 @@ more information.
 
 [error]: https://blogs.msdn.microsoft.com/kebab/2013/06/09/an-introduction-to-error-handling-in-powershell/
 
+I just pulled master, why did my build fail?
+============================================
+
+There are two likely reasons:
+
+If the `src/windows-build` submodule was changed, you need to manually run `git
+submodule update` to check your sources out to the correct commits. Pulling does
+not automatically do this. When a submodule is out-of-date, you will likely be
+missing required build files.
+
+If package dependencies were changed in any `project.json`, you need to manually
+run `dotnet restore` to update your local dependency graphs. `Start-PSBuild
+-Restore` can automatically do this.
+
 Why did `Start-PSBuild` tell me to update `dotnet`?
 ===================================================
 
@@ -120,3 +134,17 @@ inside another repository.
 Please read the Git Book chapter on [submodules][].
 
 [submodules]: https://git-scm.com/book/en/v2/Git-Tools-Submodules
+
+Why does AppVeyor say "Project not found or access denied" when opening a build?
+================================================================================
+
+This means you're not signed into AppVeyor. Follow these steps carefully:
+
+1. Click "SIGN IN" link in upper right corner
+2. Click the blue "GitHub" button under "Login with your developer account" on the left
+3. Click the green "Authorize Application" button in the pop-up from GitHub
+4. Click the "- select account -" menu and choose "PowerShell" (**not** your user)
+5. Click the blue "GitHub" button below the menu
+6. Go back to the original link you followed to AppVeyor and click it again
+
+You should now be signed into AppVeyor and able to access our builds.

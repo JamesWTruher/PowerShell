@@ -25,6 +25,7 @@ function Start-PSBuild {
     param(
         [switch]$NoPath,
         [switch]$Restore,
+        [string]$Output,
 
         [Parameter(ParameterSetName='CoreCLR')]
         [switch]$Publish,
@@ -60,10 +61,17 @@ function Start-PSBuild {
     if (-not $NoPath) {
         Write-Verbose "Appending probable .NET CLI tool path"
         if ($IsWindows) {
-            $env:Path += ";$env:LocalAppData\Microsoft\dotnet\cli"
+            $env:Path += ";$env:LocalAppData\Microsoft\dotnet"
         } elseif ($IsOSX) {
             $env:PATH += ":/usr/local/share/dotnet"
         }
+    }
+
+    if ($IsWindows) {
+        # use custom package store - this value is also defined in nuget.config under config/repositoryPath
+        # dotnet restore uses this value as the target for installing the assemblies for referenced nuget packages.
+        # dotnet build does not currently consume the  config value but will consume env:NUGET_PACKAGES to resolve these dependencies
+        $env:NUGET_PACKAGES="$PSScriptRoot\Packages"
     }
 
     # verify we have all tools in place to do the build
@@ -98,7 +106,7 @@ function Start-PSBuild {
     }
 
     # set output options
-    $OptionsArguments = @{Publish=$Publish; FullCLR=$FullCLR; Runtime=$Runtime}
+    $OptionsArguments = @{Publish=$Publish; Output=$Output; FullCLR=$FullCLR; Runtime=$Runtime}
     $script:Options = New-PSOptions @OptionsArguments
 
     # setup arguments
@@ -107,6 +115,9 @@ function Start-PSBuild {
         $Arguments += "publish"
     } else {
         $Arguments += "build"
+    }
+    if ($Output) {
+        $Arguments += "--output", (Join-Path $PSScriptRoot $Output)
     }
     $Arguments += "--configuration", $Options.Configuration
     $Arguments += "--framework", $Options.Framework
@@ -205,14 +216,15 @@ function New-PSOptions {
         [string]$Runtime,
 
         [switch]$Publish,
+        [string]$Output,
 
         [switch]$FullCLR
     )
 
-    $Top = if ($FullCLR) {
-        "$PSScriptRoot\src\Microsoft.PowerShell.ConsoleHost"
+    if ($FullCLR) {
+        $Top = "$PSScriptRoot/src/Microsoft.PowerShell.ConsoleHost"
     } else {
-        "$PSScriptRoot/src/Microsoft.PowerShell.CoreConsoleHost"
+        $Top = "$PSScriptRoot/src/powershell"
     }
     Write-Verbose "Top project directory is $Top"
 
@@ -254,20 +266,24 @@ function New-PSOptions {
         "powershell.exe"
     }
 
-    # Build the Output path in script scope
-    $Output = [IO.Path]::Combine($Top, "bin", $Configuration, $Framework)
+    # Build the Output path
+    if ($Output) {
+        $Output = Join-Path $PSScriptRoot $Output
+    } else {
+        $Output = [IO.Path]::Combine($Top, "bin", $Configuration, $Framework)
 
-    # FullCLR only builds a library, so there is no runtime component
-    if (-not $FullCLR) {
-        $Output = [IO.Path]::Combine($Output, $Runtime)
+        # FullCLR only builds a library, so there is no runtime component
+        if (-not $FullCLR) {
+            $Output = [IO.Path]::Combine($Output, $Runtime)
+        }
+
+        # Publish injects the publish directory
+        if ($Publish) {
+            $Output = [IO.Path]::Combine($Output, "publish")
+        }
+
+        $Output = [IO.Path]::Combine($Output, $Executable)
     }
-
-    # Publish injects the publish directory
-    if ($Publish) {
-        $Output = [IO.Path]::Combine($Output, "publish")
-    }
-
-    $Output = [IO.Path]::Combine($Output, $Executable)
 
     return @{ Top = $Top;
               Configuration = $Configuration;
@@ -299,7 +315,7 @@ function Start-PSPester {
         [string]$Directory = "$PSScriptRoot/test/powershell"
     )
 
-    & (Get-PSOutput) -c "Invoke-Pester $Flags $Directory/$Tests"
+    & (Get-PSOutput) -noprofile -c "Invoke-Pester $Flags $Directory/$Tests"
     if ($LASTEXITCODE -ne 0) {
         throw "$LASTEXITCODE Pester tests failed"
     }
@@ -381,7 +397,7 @@ function Start-PSBootstrap {
     } elseif ($IsWindows -And -Not $IsCore) {
         Remove-Item -ErrorAction SilentlyContinue -Recurse -Force ~\AppData\Local\Microsoft\dotnet
         Invoke-WebRequest -Uri https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/scripts/obtain/install.ps1 -OutFile install.ps1
-        ./install.ps1
+        ./install.ps1 -Version 1.0.0-rc2-002655
 
     } else {
         Write-Warning "Start-PSBootstrap cannot be run in Core PowerShell on Windows (need Invoke-WebRequest!)"
@@ -414,7 +430,7 @@ Built upon .NET Core, it is also a C# REPL.
 
     $Source = Split-Path -Parent (Get-PSOutput)
     if ((Split-Path -Leaf $Source) -ne "publish") {
-        throw "Please Start-PSBuild -Package with the corresponding runtime for the package"
+        throw "Please Start-PSBuild -Publish with the corresponding runtime for the package"
     }
 
     # Decide package output type
@@ -438,6 +454,22 @@ Built upon .NET Core, it is also a C# REPL.
     }
 
     New-Item -Force -ItemType SymbolicLink -Path /tmp/powershell -Target $Destination/powershell >$null
+    
+    # there is a weired bug in fpm
+    # if the target of the powershell symlink exists, `fpm` aborts
+    # with a `utime` error on OS X.
+    # so we move it to make symlink broken
+    $symlink_dest = "$Destination/powershell"
+    $hack_dest = "./_fpm_symlink_hack_powershell"
+    if ($IsOSX)
+    {
+        if (Test-Path $symlink_dest)
+        {
+            Write-Warning "Move $symlink_dest to $hack_dest (fpm utime bug)"
+            Move-Item $symlink_dest $hack_dest
+        }
+    }
+
 
     # Change permissions for packaging
     chmod -R go=u $Source /tmp/powershell
@@ -483,6 +515,16 @@ Built upon .NET Core, it is also a C# REPL.
 
     # Build package
     fpm $Arguments
+
+    if ($IsOSX)
+    {
+        # this is continuation of a fpm hack for a weired bug
+        if (Test-Path $hack_dest)
+        {
+            Write-Warning "Move $hack_dest to $symlink_dest (fpm utime bug)"
+            Move-Item $hack_dest $symlink_dest
+        }
+    }
 }
 
 
@@ -777,7 +819,7 @@ function script:Start-NativeExecution([scriptblock]$sb)
         # point to the obsolete value
         if ($LASTEXITCODE -ne 0)
         {
-            throw "Execution failed with exit code $LASTEXITCODE"
+            throw "Execution of {$sb} failed with exit code $LASTEXITCODE"
         }
     }
     finally
@@ -792,7 +834,7 @@ function script:Get-StronglyTypeCsFileForResx
 $body = @'
 //------------------------------------------------------------------------------
 // <auto-generated>
-//     This code was generated by a Start-ResGen funciton from PowerShellGitHubDev.psm1.
+//     This code was generated by a Start-ResGen funciton from build.psm1.
 //     To add or remove a member, edit your .ResX file then rerun Start-ResGen.
 //
 //     Changes to this file may cause incorrect behavior and will be lost if
