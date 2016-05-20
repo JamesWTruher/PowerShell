@@ -1,40 +1,77 @@
-$moduleRoot = Split-Path -Path $MyInvocation.MyCommand.Path
+$crontabcmd = "/usr/bin/crontab"
 
-Function New-CronJob {
+# Internal helper functions
+
+function Invoke-CronTab ([String] $user, [String] $args) {
+    If ($UserName -ne [String]::Empty) {
+        $args = "-u $UserName $args"
+    }
+    
+    $cmd  = "$crontabcmd $args"
+    Invoke-Expression $cmd
+}
+
+function Import-CronTab ([String] $user, [String] $cronTab) {
+    $temp = New-TemporaryFile
+    $crontab | Set-Content $temp
+    Invoke-CronTab -user $user $temp.FullName
+    Remove-Item $temp
+}
+
+# Public functions
+
+function Remove-CronJob {
+<#
+.SYNOPSIS
+  Removes the exactly matching cron job from the cron table
+.DESCRIPTION
+  Removes the exactly matching cron job from the cron table
+.EXAMPLE
+  get-diskfreespace pcrs23
+  df pcrs23
+.RETURNVALUE
+  None
+.PARAMETER UserName
+  Optional parameter to specify a user's cron table
+.PARAMETER Job
+  Cron job object returned from Get-CronJob
+#>   
     [CmdletBinding()]
-    PARAM (
-        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)]
-        [string] $UserName,
-        [Alias("mi")][string] $Minute = "*",
-        [Alias("h")][string] $Hour = "*",
-        [Alias("dm")][string] $DayOfMonth = "*",
-        [Alias("mo")][string] $Month = "*",
-        [Alias("dw")][string] $DayOfWeek = "*",
-        [Alias("c")][Parameter(Mandatory=$true)][string] $Command
+    param (
+        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)][String] $UserName,
+        [Alias("j")][Parameter(Mandatory=$true,ValueFromPipeline=$true)][CronJob] $Job  
     )
-    PROCESS {
+    
+        
+}
+
+function New-CronJob {
+    [CmdletBinding()]
+    param (
+        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)][String] $UserName,
+        [Alias("mi")][String] $Minute = "*",
+        [Alias("h")][String] $Hour = "*",
+        [Alias("dm")][String] $DayOfMonth = "*",
+        [Alias("mo")][String] $Month = "*",
+        [Alias("dw")][String] $DayOfWeek = "*",
+        [Alias("c")][Parameter(Mandatory=$true)][String] $Command
+    )
+    process {
         $line = "{0} {1} {2} {3} {4} {5}" -f $Minute, $Hour, $DayOfMonth, $Month, $DayOfWeek, $Command
         
     }
 }
 
-Function Get-CronJob {
+function Get-CronJob {
     [CmdletBinding()]
-    PARAM (
-        [Alias("u")]
-        [parameter(Mandatory=$false,ValueFromPipeline=$true)]
-        [string] $UserName
+    [OutputType([Cron.Job])]
+    param (
+        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)][String] $UserName
     )
-    PROCESS {
-        $args = ""
-        If ($UserName -ne [String]::Empty) {
-            $args = "-u $UserName"
-        }
-        
-        $cmd  = "/usr/bin/crontab $args -l"
-        $res = Invoke-Expression $cmd
+    process {
+        $crontab = Invoke-CronTab -user $UserName -args "-l"
 
-        ForEach ($line in $res) {
+        ForEach ($line in $crontab) {
             if ($line.Trim().Length -gt 0)
             {
                 $arRes = $line.split(" ", 6)
@@ -46,7 +83,7 @@ Function Get-CronJob {
                     DayOfWeek = $arRes[4]
                     Command = $arRes[5]
                 }
-                $cronjob.psobject.TypeNames.Insert(0,"CronJob")
+                $cronjob.psobject.TypeNames.Insert(0,"Cron.Job")
                 $cronjob
             }
         }

@@ -5,7 +5,7 @@
 	<View>
 	<Name>Default</Name>
 	<ViewSelectedBy>
-		<TypeName>CronJob</TypeName>
+		<TypeName>Cron.Job</TypeName>
 	</ViewSelectedBy>
 	<TableControl>
 		<TableHeaders>
