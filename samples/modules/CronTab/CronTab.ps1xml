@@ -5,18 +5,18 @@
 	<View>
 	<Name>Default</Name>
 	<ViewSelectedBy>
-		<TypeName>Cron.Job</TypeName>
+		<TypeName>CronJob</TypeName>
 	</ViewSelectedBy>
 	<TableControl>
 		<TableHeaders>
 			<TableColumnHeader>
 				<Label>Minute</Label>
-				<Width>6</Width>
+				<Width>10</Width>
 				<Alignment>Left</Alignment>
 			</TableColumnHeader>
 			<TableColumnHeader>
 				<Label>Hour</Label>
-				<Width>4</Width>
+				<Width>10</Width>
 				<Alignment>Left</Alignment>
 			</TableColumnHeader>
 			<TableColumnHeader>
@@ -26,12 +26,12 @@
 			</TableColumnHeader>
 			<TableColumnHeader>
 				<Label>Month</Label>
-				<Width>5</Width>
+				<Width>10</Width>
 				<Alignment>Left</Alignment>
 			</TableColumnHeader>
 			<TableColumnHeader>
 				<Label>DayOfWeek</Label>
-				<Width>9</Width>
+				<Width>10</Width>
 				<Alignment>Left</Alignment>
 			</TableColumnHeader>
 			<TableColumnHeader>
