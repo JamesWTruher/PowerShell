@@ -1,13 +1,14 @@
 $crontabcmd = "/usr/bin/crontab"
 
-class CronJob {
-    [string] $Minute
-    [string] $Hour
-    [string] $DayOfMonth
-    [string] $Month
-    [string] $DayOfWeek
-    [string] $Command
-}
+#TODO fix after https://github.com/PowerShell/PowerShell/issues/932 is fixed
+#class CronJob {
+#    [string] $Minute
+#    [string] $Hour
+#    [string] $DayOfMonth
+#    [string] $Month
+#    [string] $DayOfWeek
+#    [string] $Command
+#}
 
 # Internal helper functions
 
@@ -15,18 +16,18 @@ function Get-CronTab ([String] $user) {
     $crontab = Invoke-CronTab -user $user -arguments "-l" -noThrow
     if ($crontab -is [System.Management.Automation.ErrorRecord]) {
         if ($crontab.Exception.Message.StartsWith("no crontab for ")) {
-            $crontab = [String]::Empty
+            $crontab = $null
         }
         else {
             throw $crontab.Exception
         }
     }
-    $crontab
+    [string[]] $crontab
 }
 
 function ConvertTo-CronJob ([String] $crontab) {
     $split = $crontab.split(" ", 6)
-    $cronjob = New-Object -TypeName CronJob -Property @{
+    $cronjob = New-Object -TypeName PSObject -Property @{  #TODO: change to CronJob type
         Minute = $split[0];
         Hour = $split[1];
         DayOfMonth= $split[2];
@@ -34,7 +35,7 @@ function ConvertTo-CronJob ([String] $crontab) {
         DayOfWeek = $split[4];
         Command = $split[5]
     }
-#    $cronjob.PSObject.TypeNames.Insert(0,"Cron.Job")
+    $cronjob.PSObject.TypeNames.Insert(0,"CronJob")  #TODO: remove when using CronJob type
     $cronjob
 }
 
@@ -54,9 +55,9 @@ function Invoke-CronTab ([String] $user, [String] $arguments, [Switch] $noThrow)
     }
 }
 
-function Import-CronTab ([String] $user, [String] $crontab) {
+function Import-CronTab ([String] $user, [String[]] $crontab) {
     $temp = New-TemporaryFile
-    $crontab | Set-Content $temp.FullName
+    [String]::Join([Environment]::NewLine,$crontab) | Set-Content $temp.FullName
     Invoke-CronTab -user $user $temp.FullName
     Remove-Item $temp
 }
@@ -80,21 +81,24 @@ function Remove-CronJob {
 #>   
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact="High")]
     param (
-        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)][String] $UserName,
-        [Alias("j")][Parameter(Mandatory=$true,ValueFromPipeline=$true)][CronJob] $Job  
+        [Alias("u")][Parameter(Mandatory=$false)][String] $UserName,
+        [Alias("j")][Parameter(Mandatory=$true,ValueFromPipeline=$true)][PSObject] $Job  #TODO use CronJob type  
     )
     process {
 
-        $crontab = Get-CronTab -user $UserName
-        $newcrontab = [String]::Empty
+        if (-not $Job.PSObject.TypeNames.Contains("CronJob")) { #TODO remove when using CronJob type
+            throw "Only CronJobs are accepted"
+        }
+        [string[]] $crontab = Get-CronTab -user $UserName
+        [string[]] $newcrontab = $null
         $found = $false
         
         foreach ($line in $crontab) {
             $cronjob = ConvertTo-CronJob -crontab $line
-            if ($cronjob -eq $Job) {
+            if ((Compare-object $cronjob.psobject.properties $Job.psobject.properties) -eq $null) {
                 $found = $true
             } else {
-                $newcrontab += $line + [Environment]::NewLine
+                $newcrontab += $line
             }
         }
         
@@ -102,7 +106,7 @@ function Remove-CronJob {
             $e = New-Object System.Exception -ArgumentList "Job not found"
             throw $e
         }
-        if ($pscmdlet.ShouldProcess($Job)) {
+        if ($pscmdlet.ShouldProcess($Job.Command,"Remove")) {
             Import-CronTab -user $UserName -crontab $newcrontab
         }
     }        
@@ -139,25 +143,22 @@ function New-CronJob {
 #>   
     [CmdletBinding()]
     param (
-        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)][String] $UserName,
-        [Alias("mi")][String[]] $Minute = "*",
-        [Alias("h")][String[]] $Hour = "*",
-        [Alias("dm")][String[]] $DayOfMonth = "*",
-        [Alias("mo")][String[]] $Month = "*",
-        [Alias("dw")][String[]] $DayOfWeek = "*",
-        [Alias("c")][Parameter(Mandatory=$true)][String] $Command
+        [Alias("u")][Parameter(Mandatory=$false)][String] $UserName,
+        [Alias("mi")][Parameter(Position=1)][String[]] $Minute = "*",
+        [Alias("h")][Parameter(Position=2)][String[]] $Hour = "*",
+        [Alias("dm")][Parameter(Position=3)][String[]] $DayOfMonth = "*",
+        [Alias("mo")][Parameter(Position=4)][String[]] $Month = "*",
+        [Alias("dw")][Parameter(Position=5)][String[]] $DayOfWeek = "*",
+        [Alias("c")][Parameter(Mandatory=$true,Position=6)][String] $Command
     )
     process {
-        # TODO: validate parameters, one complexity is different versions support different capabilities
+        # TODO: validate parameters, note that different versions of crontab support different capabilities
         $line = "{0} {1} {2} {3} {4} {5}" -f [String]::Join(",",$Minute), [String]::Join(",",$Hour), 
             [String]::Join(",",$DayOfMonth), [String]::Join(",",$Month), [String]::Join(",",$DayOfWeek), $Command
-        $crontab = Get-CronTab -user $UserName
-        if ($crontab -ne [String]::Empty) {
-            $crontab += [Environment]::NewLine
-        }
+        [string[]] $crontab = Get-CronTab -user $UserName
         $crontab += $line
         Import-CronTab -User $UserName -crontab $crontab
-        ConvertTo-Cronjob -crontab $line
+        ConvertTo-CronJob -crontab $line
     }
 }
 
@@ -177,7 +178,7 @@ function Get-CronJob {
     [CmdletBinding()]
     [OutputType([PSObject])]
     param (
-        [Alias("u")][Parameter(Mandatory=$false,ValueFromPipeline=$true)][String] $UserName
+        [Alias("u")][Parameter(Mandatory=$false)][String] $UserName
     )
     process {
         $crontab = Get-CronTab -user $UserName
