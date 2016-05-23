@@ -28,6 +28,7 @@ function Get-CronTab ([String] $user) {
 function ConvertTo-CronJob ([String] $crontab) {
     $split = $crontab.split(" ", 6)
     $cronjob = New-Object -TypeName PSObject -Property @{  #TODO: change to CronJob type
+        PSTypeName="CronJob";
         Minute = $split[0];
         Hour = $split[1];
         DayOfMonth= $split[2];
@@ -35,7 +36,6 @@ function ConvertTo-CronJob ([String] $crontab) {
         DayOfWeek = $split[4];
         Command = $split[5]
     }
-    $cronjob.PSObject.TypeNames.Insert(0,"CronJob")  #TODO: remove when using CronJob type
     $cronjob
 }
 
@@ -82,13 +82,10 @@ function Remove-CronJob {
     [CmdletBinding(SupportsShouldProcess=$true,ConfirmImpact="High")]
     param (
         [Alias("u")][Parameter(Mandatory=$false)][String] $UserName,
-        [Alias("j")][Parameter(Mandatory=$true,ValueFromPipeline=$true)][PSObject] $Job  #TODO use CronJob type  
+        [Alias("j")][Parameter(Mandatory=$true,ValueFromPipeline=$true)][PSTypeName("CronJob")] $Job  #TODO use CronJob type  
     )
     process {
 
-        if (-not $Job.PSObject.TypeNames.Contains("CronJob")) { #TODO remove when using CronJob type
-            throw "Only CronJobs are accepted"
-        }
         [string[]] $crontab = Get-CronTab -user $UserName
         [string[]] $newcrontab = $null
         $found = $false
