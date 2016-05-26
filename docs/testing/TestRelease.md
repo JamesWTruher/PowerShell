@@ -24,6 +24,7 @@ We have 3 distinct categorization of tests:
     These tests test feature-to-feature interaction, or complete end-to-end scenarios. They roughly equate to our
     current P3 test library. These should have no time limit
 
+## Authoring ##
 During the authoring process, the tests should be tagged with the category of test. For Pester, one of three tags should be used:
 
 | TAG     | PURPOSE             |
@@ -32,17 +33,19 @@ During the authoring process, the tests should be tagged with the category of te
 | FEATURE | Feature Test        |
 | E2E     | End-to-End Scenario |
 
-for xUnit tests, we need to create custom attributes 
+for xUnit tests, we need to create similar custom attributes which can then be applied as substitutes for the
+`[Fact]` attribute. We should also build our own xUnit test runner to reduce the reliance on dotnet cli.
 
 ## STEX/LAB Interaction
 We currently have nearly 200 workflows covering our BVT through Milestone tests, as we move to a OSS release mechanism this
 will become onerous, as there is an expectation that we will continue to 
 
-As set of tags should be u
+Since Pester can provide xUnit logs, we should 
 
 The tests need to be grouped logically, so they can be easily found. Rather than having the tests co-located with the source
 code (because the sheer number of test artifacts will be rather larger than the source code which will cause difficulty in finding
 both *test* and *code*), we will create a file system structure
+
 CommandsAndProviders
 
     Aliases
@@ -58,25 +61,25 @@ Scripting
     Classes
     Debugging
     LanguageandParser
-    ScriptInternationalization
+    ScriptInternationalization (P3)
 
 Engine
 
     EngineAPIs
     ErrorsandExceptions
-    Eventing
+    Eventing (P3)
     ExtensibleTypeSystem
     HelpSystem
-    Jobs
-    LoggingandTracing
+    Jobs (P3)
+    LoggingandTracing (P2)
     Modules
-    Multi-CLR
+    Multi-CLR (P3)
     ParameterBinding
-    PS-CIM
+    PS-CIM (P2)
     Runspace
     SessionState
-    SQM
-    Transactions
+    SQM (P3)
+    Transactions (P3)
     ConsoleHost
     FormatandOutput
     HostInterfaces
@@ -84,16 +87,16 @@ Engine
 
 QualityCriteria
 
-    Coverage
-    FxCop
+    Coverage (P3)
+    FxCop (P3)
     Performance
 
 Remoting
 
-    Cmdlets
-    Infrastructure
-    NamedPipeTransport
-    Serialization
+    Cmdlets (P2)
+    Infrastructure (P2)
+    NamedPipeTransport (P2)
+    Serialization (P2)
 
 Security
 
