@@ -15,13 +15,14 @@ We have 3 distinct categorization of tests:
 
 **Feature Tests**
 
-    These are tests which completely test a feature, but do not test feature/feature interaction. These tests roughly equate
-    to our current P1/P2 tests. It is expected that a large number of current BVT/DRT/P1 tests should actually be feature tests.
+    These are tests which completely test a feature, but do not test feature/feature interaction. These tests
+    roughly equate  to our current P1/P2 tests. It is expected that a large number of current BVT/DRT/P1 tests
+    should actually be feature tests.
 
 **End-To-End Scenario Tests**
 
-    These tests test feature-to-feature interaction, or complete end-to-end scenarios. They roughly equate to our current 
-    P3 test library. These should have no time limit
+    These tests test feature-to-feature interaction, or complete end-to-end scenarios. They roughly equate to our
+    current P3 test library. These should have no time limit
 
 During the authoring process, the tests should be tagged with the category of test. For Pester, one of three tags should be used:
 
@@ -30,6 +31,8 @@ During the authoring process, the tests should be tagged with the category of te
 | CI      | Check in Test       |
 | FEATURE | Feature Test        |
 | E2E     | End-to-End Scenario |
+
+for xUnit tests, we need to create custom attributes 
 
 ## STEX/LAB Interaction
 We currently have nearly 200 workflows covering our BVT through Milestone tests, as we move to a OSS release mechanism this
