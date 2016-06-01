@@ -200,4 +200,14 @@ against private builds. I propose the following:
         1 if that full build fails, we should reject the PR
     4 5 nebula systems should be reserved for test and the private build installed on them
         1 WTT client must be installed on the system as we will be using our current lab
-    5 each system will have one test workflow executed on it, for each of the test types we currently have (BVT/DRT/FEATURE/RI/Milestone)
+    5 each system will have one test workflow executed on it, for each of the test types we 
+    currently have (BVT/DRT/FEATURE/RI/Milestone)
+        1 by parallelizing the test execution, we can investigate
+Test failures must be investigated in the same way as they are presently, I would suggest that changes are taken simultaneously 
+in SD and Github when validated
+
+Because this process is mostly manual and will be time consuming (the RI/Feature/Milestone tests take a number of hours),
+I suggest that we take groups of PRs on a twice a week basis. 
+
+# The Future #
+When we feel confident that we have enough test coverage on GitHub to replace
