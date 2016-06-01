@@ -106,16 +106,18 @@ seems a bit buggy). For platform exclusion, these should be done via `#if` in th
 ## Prioritization ##
 Since we know that we cannot possibly release all of our tests by Aug17, we need to focus our efforts on the best
 ROI. I believe those to be our cmdlets, providers, and our language. Our cmdlets and providers because that's what
-our customers will use after they've written `"hello world"` and `1 + 1 -eq 2` and the risk in behavioral changes
-between full PS and core is not yet fully known. We need to be sure that our language is consistent a
+our customers will use the most, and where the risk is highest. We have already a large number of powershell scripts
+running on core which provide some level of confidence about the base language elements, but changes between 
+CORECLR and FullCLR may produce subtle changes which must be found.
+
 ### Minimum Viable
 In order to release a minimally viable set of tests for Aug17, I suggest prioritization as follows, where we deliver only
-CI and Feature tests for the following areas. 
+CI and Feature tests for the following areas and for priority P0 only. 
 
 CommandsAndProviders
 
     Aliases (P0)
-    Cmdlets (P0)
+    Cmdlets (P0) *focus only on those cmdlets which are being delivered*
     Functions (P0)
     Infrastructure (P1)
     ProviderInfrastructure (P1)
@@ -180,7 +182,6 @@ logic
 
 Since Pester can provide xUnit logs, we should 
 
-The tests need to be grouped logically, so they can be easily found. Rather than having the tests co-located with the source
-code (because the sheer number of test artifacts will be rather larger than the source code which will cause difficulty in finding
-both *test* and *code*), we will create a file system structure
+The tests need to be easily executed and easily found which implies logical grouping. Rather than having the tests co-located with the source code (because the sheer number of test artifacts will be rather larger than the source code which will cause difficulty in finding both *test* and *code*), we will create a file system structure which provides both an easy way to locate a test and 
+then execute it.
 
