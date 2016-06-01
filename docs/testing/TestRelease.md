@@ -193,3 +193,11 @@ most rudamentary checking, we need to find a way to validate submissions against
 
 I suggest that we follow the current process that we have for taking changes in Git back to SD and then run our full tests 
 against private builds. I propose the following:
+
+    1 A private enlistment is created 
+    2 The private changes from Git are applied onto that enlistment
+    3 A full build is created
+        1 if that full build fails, we should reject the PR
+    4 5 nebula systems should be reserved for test and the private build installed on them
+        1 WTT client must be installed on the system as we will be using our current lab
+    5 each system will have one test workflow executed on it, for each of the test types we currently have (BVT/DRT/FEATURE/RI/Milestone)
