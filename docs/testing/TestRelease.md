@@ -185,3 +185,11 @@ Since Pester can provide xUnit logs, we should
 The tests need to be easily executed and easily found which implies logical grouping. Rather than having the tests co-located with the source code (because the sheer number of test artifacts will be rather larger than the source code which will cause difficulty in finding both *test* and *code*), we will create a file system structure which provides both an easy way to locate a test and 
 then execute it.
 
+# Running Tests #
+It will not be possible to migrate our compendium of tests to github in time for an Aug17 release, or even 
+migrate a substantial portion of our BVT tests to be release on Aug17, but we will still need a way take contributions
+from the community and assess the quality of those submissions. We cannot rely on our CI system to do any but the
+most rudamentary checking, we need to find a way to validate submissions against our larger test base.
+
+I suggest that we follow the current process that we have for taking changes in Git back to SD and then run our full tests 
+against private builds. I propose the following:
