@@ -4,7 +4,7 @@ idx/ri/milestone tests. The prospect of reviewing all of our nearly 100,000 test
 something that be considered. However, we can produce a set of tests which can be released which help us better
 measure quality.
 
-We should have 3 distinct categorization of tests:
+We need have 3 distinct categorization of tests:
 
 **Checkin Tests**
 
@@ -34,9 +34,74 @@ During the authoring process, the tests should be tagged with the category of te
 | FEATURE | Feature Test        |
 | E2E     | End-to-End Scenario |
 
+If a test should not be run on a specific platform, those tests should be skipped. Skipping a test should be done based on Special Variables available on the platform and the `-skip` parameter for the It block
+
+| Variable Name | Platform               |
+| ------------- | ---------------------- |
+| IsOSX         | Mac                    |
+| IsWindows     | Windows (full)         |
+| IsLinux       | Linux                  |
+| IsCore        | PowerShell on CoreCLR  |
+
+### Composing a Pester Test ###
+The following are examples of Pester tests which are specific to platform and/or category
+```
+Describe "This is a test" {
+    It "this is a test which runs on Linux and part of CI" -Tags CI -skip:(! $IsLinux) {
+       1 | should be 1
+    }
+}
+```
+
+Pester does not have a mechanism for skipping a block of tests, but that can be done via setting 
+`$PSDefaultParameterValues`, the following example shows how multiple tests may be skipped in a describe
+block.
+```
+Describe "No run on Linux" {
+    BeforeAll {
+        # skip tests on Linux
+        if ( $IsLinux ) { $psdefaultparametervalues["It:skip"] = $true }
+    }
+    AfterAll { $psdefaultparametervalues.Remove("It:skip") }
+    It "Test 1" {
+        1 | should be 1
+    }
+    It "Test 2" {
+        1 | should be 1
+    }
+}
+
+Describe "No run on windows" {
+    BeforeAll {
+        # skip tests on Windows
+        if ( $IsWindows ) { $psdefaultparametervalues["It:skip"] = $true }
+    }
+    AfterAll { $psdefaultparametervalues.remove("It:skip") }
+    It "Test 1" {
+        1 | should be 1
+    }
+    It "Test 2" {
+        1 | should be 1
+    }
+}
+```
+when run, if $IsWindows is true, the tests will be skipped:
+```
+PS> $IsWindows = $true
+PS> invoke-pester .\t3.tests.ps1
+Describing No run on Linux
+ [+] Test 1 44ms
+ [+] Test 2 21ms
+Describing No run on windows
+ [!] Test 1 25ms
+ [!] Test 2 8ms
+Tests completed in 99ms
+Passed: 2 Failed: 0 Skipped: 2 Pending: 0 Inconclusive: 0
+```
+
 for xUnit tests, we need to create similar custom attributes which can then be applied as substitutes for the
 `[Fact]` attribute. We should also create our own xUnit test runner to reduce the reliance on dotnet cli (which
-seems a bit buggy).
+seems a bit buggy). For platform exclusion, these should be done via `#if` in the xunit test source.
 
 ## Prioritization ##
 Since we know that we cannot possibly release all of our tests by Aug17, we need to focus our efforts on the best
@@ -101,6 +166,8 @@ Remoting
 
 Security
 
+     Cmdlets (P2)
+     Signing Infrastructure (P3)
 
 ## Interacting with STEX 
 At the same time that we are preparing our test artifacts for release, we have the opportunity to reduce the complexity of our 
