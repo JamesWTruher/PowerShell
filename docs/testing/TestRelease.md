@@ -4,7 +4,7 @@ idx/ri/milestone tests. The prospect of reviewing all of our nearly 100,000 test
 something that be considered. However, we can produce a set of tests which can be released which help us better
 measure quality.
 
-We need have 3 distinct categorization of tests:
+We need to have 3 distinct categorization of tests:
 
 **Checkin Tests**
 
@@ -24,6 +24,11 @@ We need have 3 distinct categorization of tests:
 
     These tests test feature-to-feature interaction, or complete end-to-end scenarios. They roughly equate to our
     current P3 test library. These should have no time limit
+    
+
+> _Why not just two categories? inner/outerloop? It's my opinion that we need more flexibility. Some teams (like
+> ours) will have too many tests to be run quickly (or some single tests will take many minutes to run), and we 
+> want to ensure that we have a quick validation that something serious is not broken._
 
 ## Authoring ##
 During the authoring process, the tests should be tagged with the category of test. For Pester, one of three tags should be used:
@@ -211,3 +216,15 @@ I suggest that we take groups of PRs on a twice a week basis.
 
 # The Future #
 When we feel confident that we have enough test coverage on GitHub to replace
+
+
+# TASKS #
+August Release
+
+    1 Create xUnit test runner
+    2 Create tagging attributes for xUnit
+    3 Continued migration of test artifacts
+         1 Specify exactly which tests should be migrated and in what order
+    4 Create code to upload test result data from CI (and other test automation envs)
+    5 Validate manual test procedure
+         1 create automation to improve efficiency
