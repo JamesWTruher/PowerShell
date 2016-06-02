@@ -4,7 +4,21 @@ idx/ri/milestone tests. The prospect of reviewing all of our nearly 100,000 test
 something that be considered. However, we can produce a set of tests which can be released which help us better
 measure quality.
 
-We need to have 3 distinct categorization of tests:
+In our current STEX environment, we have 5 classification of tests
+
+    1 BVT
+    2 DRT
+    3 Feature
+    4 RI
+    5 Milestone
+
+In our current automation, each of these categories have more than 40 different test automation processes
+(STEX Workflows) to validate all features of the core functionality of full PowerShell (this excludes teams
+such as DSC/Nano/etc). From an organizational perspective, this very large matrix of processes is completely
+at odds with our desire for simplicity and maintanability. We need to reduce our complexity, but retain
+flexibility and coverage as we move to an OSS model.
+
+I propose that we have 3 distinct categorization of tests:
 
 **Checkin Tests**
 
@@ -12,7 +26,7 @@ We need to have 3 distinct categorization of tests:
     Because these should be run with every push, they should run swiftly and be extremely stable. As a goal, they 
     should not take longer than 20-30 minutes in total to execute. This category roughly equates to our BVT/DRT/P1
     tests. Our current list of BVT/DRT/P1 is in need of pruning - total execution time for BVT/DRT tests in the lab
-    takes about 60 minutes.
+    takes about 60 minutes, it would be better for engineers to half this time.
 
 **Feature Tests**
 
@@ -24,7 +38,6 @@ We need to have 3 distinct categorization of tests:
 
     These tests test feature-to-feature interaction, or complete end-to-end scenarios. They roughly equate to our
     current P3 test library. These should have no time limit
-    
 
 > _Why not just two categories? inner/outerloop? It's my opinion that we need more flexibility. Some teams (like
 > ours) will have too many tests to be run quickly (or some single tests will take many minutes to run), and we 
@@ -227,4 +240,7 @@ August Release
          1 Specify exactly which tests should be migrated and in what order
     4 Create code to upload test result data from CI (and other test automation envs)
     5 Validate manual test procedure
+         1 Document the process
+             * much of this is already done by Sergei [here](https://github.com/PowerShell/Internal-PowerShellTeam-Tools/blob/master/PowerShellDevelopersWiki/Workflow.md)
          1 create automation to improve efficiency
+         2 do a number of dry-runs to 
