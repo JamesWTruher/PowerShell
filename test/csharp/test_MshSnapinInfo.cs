@@ -9,7 +9,7 @@ namespace PSTests
     public class MshSnapinInfoTests
     {
         // Test that it does not throw an exception
-        [Fact]
+        [CiFact]
         public void TestReadRegistryInfo()
         {
             Version someVersion = null;
@@ -18,7 +18,7 @@ namespace PSTests
         }
 
         // PublicKeyToken is null on Linux
-        [Fact]
+        [CiFact]
         public void TestReadCoreEngineSnapIn()
         {
             PSSnapInInfo pSSnapInInfo = PSSnapInReader.ReadCoreEngineSnapIn();

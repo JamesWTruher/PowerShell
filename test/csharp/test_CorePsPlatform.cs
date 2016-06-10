@@ -9,43 +9,43 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public static class PlatformTests
     {
-        [Fact]
+        [CiFact]
         public static void TestIsCore()
         {
             Assert.True(Platform.IsCore);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestHasCom()
         {
             Assert.False(Platform.HasCom());
         }
 
-        [Fact]
+        [CiFact]
         public static void TestHasAmsi()
         {
             Assert.False(Platform.HasAmsi());
         }
 
-        [Fact]
+        [CiFact]
         public static void TestUsesCodeSignedAssemblies()
         {
             Assert.False(Platform.UsesCodeSignedAssemblies());
         }
 
-        [Fact]
+        [CiFact]
         public static void TestHasDriveAutoMounting()
         {
             Assert.False(Platform.HasDriveAutoMounting());
         }
 
-        [Fact]
+        [CiFact]
         public static void TestHasRegistrySupport()
         {
             Assert.False(Platform.HasRegistrySupport());
         }
 
-        [Fact]
+        [CiFact]
         public static void TestGetUserName()
         {
             var startInfo = new ProcessStartInfo
@@ -68,7 +68,7 @@ namespace PSTests
             }
         }
 
-        [Fact(Skip="Bad arguments for OS X")]
+        [CiFact(Skip="Bad arguments for OS X")]
         public static void TestGetMachineName()
         {
             var startInfo = new ProcessStartInfo
@@ -91,7 +91,7 @@ namespace PSTests
             }
         }
 
-        [Fact(Skip="Bad arguments for OS X")]
+        [CiFact(Skip="Bad arguments for OS X")]
         public static void TestGetFQDN()
         {
             var startInfo = new ProcessStartInfo
@@ -114,7 +114,7 @@ namespace PSTests
             }
         }
 
-        [Fact(Skip="Bad arguments for OS X")]
+        [CiFact(Skip="Bad arguments for OS X")]
         public static void TestGetDomainName()
         {
             var startInfo = new ProcessStartInfo
@@ -137,25 +137,25 @@ namespace PSTests
             }
         }
 
-        [Fact]
+        [CiFact]
         public static void TestIsExecutable()
         {
             Assert.True(Platform.NonWindowsIsExecutable("/bin/ls"));
         }
 
-        [Fact]
+        [CiFact]
         public static void TestIsNotExecutable()
         {
             Assert.False(Platform.NonWindowsIsExecutable("/etc/hosts"));
         }
 
-        [Fact]
+        [CiFact]
         public static void TestDirectoryIsNotExecutable()
         {
             Assert.False(Platform.NonWindowsIsExecutable("/etc"));
         }
 
-        [Fact]
+        [CiFact]
         public static void TestFileIsNotHardLink()
         {
             string path = @"/tmp/nothardlink";
@@ -175,7 +175,7 @@ namespace PSTests
             File.Delete(path);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestFileIsHardLink()
         {
             string path = @"/tmp/originallink";
@@ -220,7 +220,7 @@ namespace PSTests
             File.Delete(link);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestDirectoryIsNotHardLink()
         {
             string path = @"/tmp";
@@ -230,7 +230,7 @@ namespace PSTests
             Assert.False(Platform.NonWindowsIsHardLink(fd));
         }
 
-        [Fact]
+        [CiFact]
         public static void TestNonExistantIsHardLink()
         {
             // A file that should *never* exist on a test machine:
@@ -244,7 +244,7 @@ namespace PSTests
             Assert.False(Platform.NonWindowsIsHardLink(fd));
         }
 
-        [Fact]
+        [CiFact]
         public static void TestFileIsSymLink()
         {
             string path = @"/tmp/originallink";
@@ -286,7 +286,7 @@ namespace PSTests
             File.Delete(link);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCommandLineArgvReturnsAnElement()
         {
             string testCommand= "Today";
@@ -296,7 +296,7 @@ namespace PSTests
             Assert.Equal(1, retval.Length);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCommandLineArgvWWithSpaces()
         {
             string testCommand= "Today is a good day or is it";
@@ -313,7 +313,7 @@ namespace PSTests
             Assert.Equal("it", retval[7]);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCommandLineToArgvWTabsAreTreatedAsSpaces()
         {
             string testCommand = "Today \t is a good day";
@@ -327,7 +327,7 @@ namespace PSTests
             Assert.Equal("day", retval[4]);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCommandLineToArgvWQuotesAreArgs()
         {
             string testCommand = "Today is \"a good\" day";
@@ -341,7 +341,7 @@ namespace PSTests
             Assert.Equal("day", retval[3]);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCommandLineToArgvWEvenNumberBackSlashes()
         {
             string test1 = "a\\b c d";
@@ -375,7 +375,7 @@ namespace PSTests
             Assert.Equal("a\\\\\\b", retval[0]);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCommandLineToArgvwOddNumberWithBackSlashes()
         {
             string test1 = "a\\\"b";

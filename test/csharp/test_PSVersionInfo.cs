@@ -7,7 +7,7 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public static class PSVersionInfoTests
     {
-        [Fact]
+        [CiFact]
         public static void TestVersions()
         {
             // test that a non-null version table is returned, and
