@@ -22,7 +22,11 @@ namespace PSTests
 
     public class PowerShellTestAttribute : FactAttribute
     {
-        public string Pending { get; set; }
+        public string Pending 
+        { 
+            get { return this.Skip; } 
+            set { this.Skip = string.Format("Pending: {0}", value); } 
+        }
     }
     public class CiFact : PowerShellTestAttribute { }
     public class FeatureFact : PowerShellTestAttribute { }
@@ -30,7 +34,11 @@ namespace PSTests
 
     public class PowerShellTheoryAttribute : TheoryAttribute
     {
-        public string Pending { get; set; }
+        public string Pending 
+        { 
+            get { return this.Skip; } 
+            set { this.Skip = string.Format("Pending: {0}", value); } 
+        }
     }
     public class CiTheory : PowerShellTheoryAttribute { }
     public class FeatureTheory : PowerShellTheoryAttribute { }

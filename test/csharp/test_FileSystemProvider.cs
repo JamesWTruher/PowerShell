@@ -104,7 +104,7 @@ namespace PSTests
 			}
         }
 		
-		[CiFact]
+		[CiFact(Pending="wait")]
         public void TestSetProperty()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -133,7 +133,7 @@ namespace PSTests
 			fileSystemProvider.ClearProperty(testPath, new Collection<string>(){"Attributes"});
         }
 		
-		[CiFact]
+		[CiFact(Pending="wait")]
         public void TestGetContentReader()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -146,7 +146,7 @@ namespace PSTests
 			contentReader.Close();
         }
 		
-		[CiFact]
+		[CiFact(Pending="wait")]
         public void TestGetContentWriter()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();

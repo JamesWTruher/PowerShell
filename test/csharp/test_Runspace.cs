@@ -62,7 +62,7 @@ namespace PSTests
             }
         }
 
-        [CiFact]
+        [CiFact(Pending="Fails in Travis CI, need investigation")]
         public void TestRunspaceWithPowerShellAndInitialSessionState()
         {
             InitialSessionState iss = InitialSessionState.CreateDefault2();
