@@ -15,7 +15,7 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public class SessionStateTests
     {
-        [Fact]
+        [CiFact]
         public void TestDrives()
         {
             CultureInfo currentCulture = CultureInfo.CurrentCulture;

@@ -55,13 +55,13 @@ namespace PSTests
             return matchingProvider;
         }
 		
-        [Fact]
+        [CiFact]
         public void TestCreateJunctionFails()
         {
             Assert.False(InternalSymbolicLinkLinkCodeMethods.CreateJunction("",""));
         }
 		
-		[Fact]
+		[CiFact]
         public void TestGetHelpMaml()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -70,7 +70,7 @@ namespace PSTests
 			Assert.Equal(fileSystemProvider.GetHelpMaml(String.Empty,"path"),String.Empty);
         }
 		
-		[Fact]
+		[CiFact]
         public void TestMode()
         {
 			Assert.Equal(FileSystemProvider.Mode(null),String.Empty);
@@ -82,7 +82,7 @@ namespace PSTests
 			Assert.Equal(FileSystemProvider.Mode(PSObject.AsPSObject(excutableObject)).Replace("r","-"),"------");
         }
 		
-		[Fact]
+		[CiFact]
         public void TestGetProperty()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -104,7 +104,7 @@ namespace PSTests
 			}
         }
 		
-		[Fact]
+		[CiFact]
         public void TestSetProperty()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -123,7 +123,7 @@ namespace PSTests
 			}
         }
 		
-		[Fact]
+		[CiFact]
         public void TestClearProperty()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -133,7 +133,7 @@ namespace PSTests
 			fileSystemProvider.ClearProperty(testPath, new Collection<string>(){"Attributes"});
         }
 		
-		[Fact]
+		[CiFact]
         public void TestGetContentReader()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -146,7 +146,7 @@ namespace PSTests
 			contentReader.Close();
         }
 		
-		[Fact]
+		[CiFact]
         public void TestGetContentWriter()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();
@@ -160,7 +160,7 @@ namespace PSTests
 			Assert.Equal(File.ReadAllText(testPath), testContent+@"contentWriterTestContent"+ System.Environment.NewLine);
         }
 		
-		[Fact]
+		[CiFact]
         public void TestClearContent()
         {
 			FileSystemProvider fileSystemProvider = new FileSystemProvider();

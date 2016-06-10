@@ -7,7 +7,7 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public static class PSEnumerableBinderTests
     {
-        [Fact]
+        [CiFact]
         public static void TestIsComObject()
         {
             // It just needs an arbitrary object

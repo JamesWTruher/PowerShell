@@ -14,7 +14,7 @@ namespace PSTests
         private static int count = 3;
         private static string script = String.Format($"get-command | select-object -first {count}");
 
-        [Fact]
+        [CiFact]
         public void TestRunspaceWithPipeline()
         {
             using (Runspace runspace = RunspaceFactory.CreateRunspace())
@@ -36,7 +36,7 @@ namespace PSTests
             }
         }
 
-        [Fact]
+        [CiFact]
         public void TestRunspaceWithPowerShell()
         {
             using (var runspace = RunspaceFactory.CreateRunspace())
@@ -62,7 +62,7 @@ namespace PSTests
             }
         }
 
-        [Fact]
+        [CiFact]
         public void TestRunspaceWithPowerShellAndInitialSessionState()
         {
             InitialSessionState iss = InitialSessionState.CreateDefault2();

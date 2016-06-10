@@ -7,13 +7,13 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public static class SecuritySupportTests
     {
-        [Fact]
+        [CiFact]
         public static void TestScanContent()
         {
             Assert.Equal(AmsiUtils.ScanContent("", ""), AmsiUtils.AmsiNativeMethods.AMSI_RESULT.AMSI_RESULT_NOT_DETECTED);
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCurrentDomain_ProcessExit()
         {
             Assert.Throws<PlatformNotSupportedException>(delegate {
@@ -21,13 +21,13 @@ namespace PSTests
                 });
         }
 
-        [Fact]
+        [CiFact]
         public static void TestCloseSession()
         {
             AmsiUtils.CloseSession();
         }
 
-        [Fact]
+        [CiFact]
         public static void TestUninitialize()
         {
             AmsiUtils.Uninitialize();

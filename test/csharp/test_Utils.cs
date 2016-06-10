@@ -7,7 +7,7 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public static class UtilsTests
     {
-        [Fact]
+        [CiFact]
         public static void TestIsWinPEHost()
         {
             Assert.False(Utils.IsWinPEHost());

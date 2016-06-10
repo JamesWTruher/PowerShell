@@ -7,7 +7,7 @@ namespace PSTests
     [Collection("AssemblyLoadContext")]
     public static class CorePsExtensionsTests
     {
-        [Fact]
+        [CiFact]
         public static void TestEnvironmentOSVersion()
         {
             // this test primarily checks that there is no exception thrown
