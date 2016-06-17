@@ -552,6 +552,19 @@ namespace System.Management.Automation
         }
 
         /// <summary>
+        /// Facade for the PowerShell base name
+        /// </summary>
+        internal static string GetPowerShellBaseName()
+        {
+#if CORECLR
+            return "PowerShellCore";
+#else
+            return "WindowsPowerShell";
+#endif
+        }
+
+
+        /// <summary>
         /// Facade for ManagementDateTimeConverter.ToDmtfDateTime(DateTime)
         /// </summary>
         internal static string ToDmtfDateTime(DateTime date)

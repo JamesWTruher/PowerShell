@@ -1123,6 +1123,14 @@ namespace System.Management.Automation.Security
                 DWORD idxCert
             );
 
+#if _CMF
+        internal static int WTGetSignatureInfo([InAttribute()] [MarshalAsAttribute(UnmanagedType.LPWStr)] string pszFile, [InAttribute()] System.IntPtr hFile, SIGNATURE_INFO_FLAGS sigInfoFlags, ref SIGNATURE_INFO psiginfo, ref System.IntPtr ppCertContext, ref System.IntPtr phWVTStateData)
+        {
+            throw new NotSupportedException();
+        }
+
+#else
+
         /// Return Type: HRESULT->LONG->int
         ///pszFile: PCWSTR->WCHAR*
         ///hFile: HANDLE->void*
@@ -1132,6 +1140,7 @@ namespace System.Management.Automation.Security
         ///phWVTStateData: HANDLE*
         [DllImportAttribute("wintrust.dll", EntryPoint = "WTGetSignatureInfo", CallingConvention = CallingConvention.StdCall)]
         internal static extern int WTGetSignatureInfo([InAttribute()] [MarshalAsAttribute(UnmanagedType.LPWStr)] string pszFile, [InAttribute()] System.IntPtr hFile, SIGNATURE_INFO_FLAGS sigInfoFlags, ref SIGNATURE_INFO psiginfo, ref System.IntPtr ppCertContext, ref System.IntPtr phWVTStateData);
+#endif
 
         internal static void FreeWVTStateData(System.IntPtr phWVTStateData)
         {

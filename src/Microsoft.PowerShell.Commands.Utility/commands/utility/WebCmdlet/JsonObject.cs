@@ -208,7 +208,7 @@ namespace Microsoft.PowerShell.Commands
                 }
 
                 // Use module auto-loading to import Json.Net.
-                var jsonNetModulePath = Path.Combine(System.Environment.GetEnvironmentVariable("ProgramFiles"), @"WindowsPowerShell\Modules\Json.Net");
+                var jsonNetModulePath = Path.Combine(System.Environment.GetEnvironmentVariable("ProgramFiles"), ClrFacade.GetPowerShellBaseName(), @"\Modules\Json.Net");
                 CmdletInfo cmdletInfo = cmdlet.Context.SessionState.InvokeCommand.GetCmdlet("Microsoft.PowerShell.Core\\Import-Module");
                 Exception exception;
                 Collection<PSModuleInfo> importedModule = CommandDiscovery.AutoloadSpecifiedModule(jsonNetModulePath, cmdlet.Context, cmdletInfo.Visibility, out exception);

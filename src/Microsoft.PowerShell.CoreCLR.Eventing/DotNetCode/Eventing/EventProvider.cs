@@ -94,16 +94,20 @@ namespace System.Diagnostics.Eventing{
         [System.Security.SecurityCritical]
         private unsafe void EtwRegister()
         {
-            uint status;
-
             m_etwCallback = new UnsafeNativeMethods.EtwEnableCallback(EtwEnableCallBack);
-            
+
+            #if !CORECLR   
+            uint status;            
             status = UnsafeNativeMethods.EventRegister(ref m_providerId, m_etwCallback, null, ref m_regHandle);
             if (status != 0)
             {
                 throw new Win32Exception((int)status);
             }
+            #endif
 
+            #if CORECLR
+            m_regHandle = 0;
+            #endif
         }
 
         //

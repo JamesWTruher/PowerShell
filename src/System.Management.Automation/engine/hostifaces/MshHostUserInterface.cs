@@ -1122,7 +1122,7 @@ namespace System.Management.Automation.Host
                 outputWait += 100;
             }
 
-            if (contentWriter != null)
+            if (contentWriter != null && !disposed)
             {
                 contentWriter.Flush();
                 contentWriter.Dispose();
