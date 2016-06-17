@@ -2,7 +2,7 @@
 Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
 
-#if CORECLR
+#if (CORECLR || CUSTOMFULLCLR) 
 
 using System.IO;
 using System.Collections.Concurrent;
@@ -13,6 +13,10 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.Loader;
+
+#if CUSTOMFULLCLR
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace System.Management.Automation
 {
@@ -593,6 +597,7 @@ namespace System.Management.Automation
                 return false;
             }
 
+            #if !CORECLR
             // PublicKeyToken should be the same, unless it's not specified in the requested assembly
             byte[] requestedPublicKeyToken = requestedAssembly.GetPublicKeyToken();
             byte[] loadedPublicKeyToken = loadedAssembly.GetPublicKeyToken();
@@ -608,6 +613,7 @@ namespace System.Management.Automation
                         return false;
                 }
             }
+            #endif
 
             return true;
         }

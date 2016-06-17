@@ -1253,7 +1253,7 @@ namespace System.Management.Automation
                                                      int dwLanguageId, [Out]StringBuilder lpBuffer,
                                                      int nSize, IntPtr va_list_arguments);
 
-            [DllImport("api-ms-win-core-sysinfo-l1-2-1.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+            [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
             internal static extern bool GetVersionEx(ref OSVERSIONINFOEX osVerEx);
 
             [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]

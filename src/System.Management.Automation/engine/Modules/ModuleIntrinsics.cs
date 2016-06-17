@@ -774,6 +774,7 @@ namespace System.Management.Automation
                     currentProcessModulePath += hklmMachineModulePath; // += EVT.Machine
                 }
             }
+            #if !CORECLR
             else // EVT.Process exists
             {
                 // Now handle the case where the environment variable is already set.
@@ -876,7 +877,7 @@ namespace System.Management.Automation
             // if $PSHome\Modules not found (psHomePosition == -1) - append <Program Files> location to the end;
             // if $PSHome\Modules IS found (psHomePosition >= 0) - insert <Program Files> location before $PSHome\Modules
             currentProcessModulePath = AddToPath(currentProcessModulePath, programFilesModulePath, indexOfPSHomeModulePath);
-
+            #endif
             return currentProcessModulePath;
         }
 

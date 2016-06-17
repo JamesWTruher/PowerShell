@@ -114,8 +114,9 @@ namespace Microsoft.PowerShell.Commands
         {
             get
             {
+                string pattern = ClrFacade.GetPowerShellBaseName() + "/{0}";
                 string app = string.Format(CultureInfo.InvariantCulture,
-                    "WindowsPowerShell/{0}", PSVersionInfo.PSVersion);
+                    pattern, PSVersionInfo.PSVersion);
                 return (app);
             }
         }

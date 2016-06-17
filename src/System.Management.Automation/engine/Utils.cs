@@ -240,6 +240,14 @@ namespace System.Management.Automation
         /// </exception>
         internal static string GetApplicationBase(string shellId)
         {
+
+#if CORECLR // Use the location of SMA.dll as the application base
+            // Assembly.GetEntryAssembly is not in CoreCLR. GAC is not in CoreCLR.
+            Assembly assembly = typeof(PSObject).GetTypeInfo().Assembly;
+            var result = Path.GetDirectoryName(assembly.Location);
+            return result;
+#else
+
             if (!Platform.IsCore)
             {
                 // try to get the path from the registry first
@@ -250,11 +258,6 @@ namespace System.Management.Automation
                 }
             }
 
-#if CORECLR // Use the location of SMA.dll as the application base
-            // Assembly.GetEntryAssembly is not in CoreCLR. GAC is not in CoreCLR.
-            Assembly assembly = typeof(PSObject).GetTypeInfo().Assembly;
-            return Path.GetDirectoryName(assembly.Location);
-#else
             // The default keys aren't installed, so try and use the entry assembly to
             // get the application base. This works for managed apps like minishells...
             Assembly assem = Assembly.GetEntryAssembly();

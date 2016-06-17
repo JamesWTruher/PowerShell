@@ -1074,7 +1074,9 @@ namespace Microsoft.PowerShell.Commands
     /// 
     /// Creates a role capability file suitable for use in a Role Capability (which can be referenced in a Session Configuration file)
     /// </summary>
+#if !CORECLR
     [Cmdlet(VerbsCommon.New, "PSRoleCapabilityFile", HelpUri = "http://go.microsoft.com/fwlink/?LinkId=623708")]
+#endif
     public class NewPSRoleCapabilityFileCommand : PSCmdlet
     {
         #region Parameters
