@@ -4,9 +4,11 @@
     "authors": [ "garretts", "andschwa" ],
 
     "buildOptions": {
+        "keyFile": "../signing/visualstudiopublic.snk",
+        "delaySign": true,
+        "publicSign": false,
         "warningsAsErrors": true,
-        "allowUnsafe": true,
-        "compile": [ "../windows-build/gen/Microsoft.PowerShell.Security/*.cs" ]
+        "allowUnsafe": true
     },
 
     "dependencies": {
@@ -17,7 +19,14 @@
         "netstandard1.5": {
             "imports": [ "dnxcore50" ],
             "buildOptions": {
-                "define": [ "CORECLR" ]
+                "define": [ "CORECLR" ],
+                "compile": {
+                    "exclude": [
+                        "security/CertificateCommands.cs",
+                        "security/CmsCommands.cs",
+                        "singleshell/installer/MshSecurityMshSnapin.cs"
+                    ]
+                }
             }
         },
         "net451": {

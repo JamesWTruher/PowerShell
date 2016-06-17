@@ -1,4 +1,3 @@
-#if !CORECLR
 /********************************************************************++
 Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
@@ -104,7 +103,7 @@ namespace System.Management.Automation.ComInterop {
                                 i.ToString(CultureInfo.InvariantCulture),
                                 method.Name,
                                 temps,
-                                initTemps), curArgument.Restrictions, curArgument.Value);
+                                initTemps), curArgument.Restrictions);
                         }
                         else
                         {
@@ -132,5 +131,3 @@ namespace System.Management.Automation.ComInterop {
 
 #endif
 
-
-#endif

@@ -12,6 +12,8 @@ dotnet-install.ps1
 # VS auto-generated solution files for project.json solutions
 *.xproj
 *.xproj.user
+*.suo
+
 
 # Ignore executables
 *.exe
@@ -30,3 +32,6 @@ powershell.version
 
 # default location for produced nuget packages
 /nuget-artifacts
+
+# resgen output
+gen

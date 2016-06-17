@@ -26,6 +26,7 @@ function Start-PSBuild {
         [switch]$NoPath,
         [switch]$Restore,
         [string]$Output,
+        [switch]$ResGen,
 
         [Parameter(ParameterSetName='CoreCLR')]
         [switch]$Publish,
@@ -46,7 +47,7 @@ function Start-PSBuild {
         [switch]$FullCLR,
 
         [Parameter(ParameterSetName='FullCLR')]
-        [string]$cmakeGenerator = "Visual Studio 14 2015",
+        [string]$cmakeGenerator = "Visual Studio 14 2015 Win64",
 
         [Parameter(ParameterSetName='FullCLR')]
         [ValidateSet("Debug",
@@ -141,6 +142,13 @@ function Start-PSBuild {
         $RestoreArguments += "$PSScriptRoot"
 
         Start-NativeExecution { dotnet restore $RestoreArguments }
+    }
+
+    # handle ResGen
+    if ($ResGen -or -not (Test-Path "$($Options.Top)/gen"))
+    {
+        log "Run ResGen (generating C# bindings for resx files)"
+        Start-ResGen
     }
 
     # Build native components
@@ -367,7 +375,11 @@ function Start-PSxUnit {
 
 
 function Start-PSBootstrap {
-    [CmdletBinding()]param()
+    [CmdletBinding()]param(
+        [ValidateSet("dev", "beta", "preview")]
+        [string]$Channel = "preview",
+        [string]$Version = "latest"
+    )
 
     Write-Host "Installing Open PowerShell build dependencies"
 
@@ -379,12 +391,8 @@ function Start-PSBootstrap {
             $IsUbuntu = Select-String "Ubuntu 14.04" /etc/os-release -Quiet
             precheck 'curl' "Bootstrap dependency 'curl' not found in PATH, please install!" > $null
             if ($IsUbuntu) {
-                # Setup LLVM feed
-                curl -s http://llvm.org/apt/llvm-snapshot.gpg.key | sudo apt-key add -
-                echo "deb http://llvm.org/apt/trusty/ llvm-toolchain-trusty-3.6 main" | sudo tee /etc/apt/sources.list.d/llvm.list
-                sudo apt-get update -qq
-
                 # Install ours and .NET's dependencies
+                sudo apt-get update -qq
                 sudo apt-get install -y -qq make g++ cmake libc6 libgcc1 libstdc++6 libcurl3 libgssapi-krb5-2 libicu52 liblldb-3.6 liblttng-ust0 libssl1.0.0 libunwind8 libuuid1 zlib1g clang-3.5
             } else {
                 Write-Warning "This script only supports Ubuntu 14.04, you must install dependencies manually!"
@@ -420,7 +428,7 @@ function Start-PSBootstrap {
             $installScript = "dotnet-install.sh"
             curl -s $obtainUrl/$installScript -o $installScript
             chmod +x $installScript
-            bash ./$installScript -c preview
+            bash ./$installScript -c $Channel -v $Version
         }
 
         # Install for Windows
@@ -428,7 +436,7 @@ function Start-PSBootstrap {
             Remove-Item -ErrorAction SilentlyContinue -Recurse -Force ~\AppData\Local\Microsoft\dotnet
             $installScript = "dotnet-install.ps1"
             Invoke-WebRequest -Uri $obtainUrl/$installScript -OutFile $installScript
-            & ./$installScript
+            & ./$installScript -c $Channel -v $Version
         } elseif ($IsWindows) {
             Write-Warning "Start-PSBootstrap cannot be run in Core PowerShell on Windows (need Invoke-WebRequest!)"
         }
@@ -645,105 +653,170 @@ function Start-DevPSGitHub {
 
 
 <#
-.EXAMPLE Copy-SubmoduleFiles                # copy files FROM submodule TO src/<project> folders
-.EXAMPLE Copy-SubmoduleFiles -ToSubmodule   # copy files FROM src/<project> folders TO submodule
+.EXAMPLE 
+PS C:> Copy-MappedFiles -PslMonadRoot .\src\monad
+
+copy files FROM .\src\monad (old location of submodule) TO src/<project> folders
 #>
-function Copy-SubmoduleFiles {
+function Copy-MappedFiles {
 
     [CmdletBinding()]
     param(
-        [string]$mappingFilePath = "$PSScriptRoot/mapping.json",
-        [switch]$ToSubmodule
+        [Parameter(ValueFromPipeline=$true)]
+        [string[]]$Path = "$PSScriptRoot",
+        [Parameter(Mandatory=$true)]
+        [string]$PslMonadRoot,
+        [switch]$Force,
+        [switch]$WhatIf
     )
 
+    begin 
+    {
+        function MaybeTerminatingWarning
+        {
+            param([string]$Message)
 
-    if (-not (Test-Path $mappingFilePath)) {
-        throw "Mapping file not found in $mappingFilePath"
-    }
-
-    $m = cat -Raw $mappingFilePath | ConvertFrom-Json | Convert-PSObjectToHashtable
-
-    # mapping.json assumes the root folder
-    Push-Location $PSScriptRoot
-    try {
-        $m.GetEnumerator() | % {
-
-            if ($ToSubmodule) {
-                cp $_.Value $_.Key -Verbose:$Verbose
-            } else {
-                mkdir (Split-Path $_.Value) -ErrorAction SilentlyContinue > $null
-                cp $_.Key $_.Value -Verbose:$Verbose
+            if ($Force)
+            {
+                Write-Warning "$Message : ignoring (-Force)"
+            }
+            elseif ($WhatIf)
+            {
+                Write-Warning "$Message : ignoring (-WhatIf)"   
+            }
+            else
+            {
+                throw "$Message : use -Force to ignore"
             }
         }
-    } finally {
-        Pop-Location
+
+        if (-not (Test-Path -PathType Container $PslMonadRoot))
+        {
+            throw "$pslMonadRoot is not a valid folder"
+        }
+
+        # Do some intelligens to prevent shouting us in the foot with CL management
+
+        # finding base-line CL
+        $cl = git --git-dir="$PSScriptRoot/.git" tag | % {if ($_ -match 'SD.(\d+)$') {[int]$Matches[1]} } | Sort-Object -Descending | Select-Object -First 1
+        if ($cl)
+        {
+            Write-Host -ForegroundColor Green "Current base-line CL is SD:$cl (based on tags)"
+        }
+        else 
+        {
+            MaybeTerminatingWarning "Could not determine base-line CL based on tags"
+        }
+
+        try
+        {
+            Push-Location $PslMonadRoot
+            if (git status --porcelain)
+            {
+                MaybeTerminatingWarning "$pslMonadRoot has changes"
+            }
+
+            if (git log --grep="SD:$cl" HEAD^..HEAD)
+            {
+                Write-Host -ForegroundColor Green "$pslMonadRoot HEAD matches [SD:$cl]"
+            }
+            else 
+            {
+                Write-Host -ForegroundColor Yellow "Try to checkout this commit in $pslMonadRoot :" 
+                git log --grep="SD:$cl"
+
+                MaybeTerminatingWarning "$pslMonadRoot HEAD doesn't match [SD:$cl]"
+            }
+        }
+        finally
+        {
+            Pop-Location
+        }
+
+        $map = @{}
+    }
+
+    process
+    {
+        $map += Get-Mappings $Path -Root $PslMonadRoot
+    }
+
+    end
+    {
+        $map.GetEnumerator() | % {
+            New-Item -ItemType Directory (Split-Path $_.Value) -ErrorAction SilentlyContinue > $null
+
+            Copy-Item $_.Key $_.Value -Verbose:([bool]$PSBoundParameters['Verbose']) -WhatIf:$WhatIf
+        }
     }
 }
 
-
-<#
-.EXAMPLE Create-MappingFile # create mapping.json in the root folder from project.json files
-#>
-function New-MappingFile {
+function Get-Mappings
+{
+    [CmdletBinding()]
     param(
-        [string]$mappingFilePath = "$PSScriptRoot/mapping.json",
-        [switch]$IgnoreCompileFiles,
-        [switch]$Ignoreresource
+        [Parameter(ValueFromPipeline=$true)]
+        [string[]]$Path = "$PSScriptRoot",
+        [string]$Root,
+        [switch]$KeepRelativePaths
     )
 
-    function Get-MappingPath([string]$project, [string]$path) {
-        if ($project -match 'TypeCatalogGen') {
-            return Split-Path $path -Leaf
-        }
-
-        if ($project -match 'Microsoft.Management.Infrastructure') {
-            return Split-Path $path -Leaf
-        }
-
-        return ($path -replace '../monad/monad/src/', '')
+    begin 
+    {
+        $mapFiles = @()
     }
 
-    $mapping = [ordered]@{}
+    process
+    {
+        Write-Verbose "Discovering map files in $Path"
+        $count = $mapFiles.Count
 
-    # assumes the root folder
-    Push-Location $PSScriptRoot
-    try {
-        $projects = ls .\src\ -Recurse -Depth 2 -Filter 'project.json'
-        $projects | % {
-            $project = Split-Path $_.FullName
-            $json = cat -Raw -Path $_.FullName | ConvertFrom-Json
-            if (-not $IgnoreCompileFiles) {
-                $json.compileFiles | % {
-                    if ($_) {
-                        if (-not $_.EndsWith('AssemblyInfo.cs')) {
-                            $fullPath = Join-Path $project (Get-MappingPath -project $project -path $_)
-                            $mapping[$_.Replace('../', 'src/')] = ($fullPath.Replace("$($pwd.Path)\",'')).Replace('\', '/')
-                        }
-                    }
-                }
-            }
-
-            if ((-not $Ignoreresource) -and ($json.resource)) {
-                $json.resource | % {
-                    if ($_) {
-                        ls $_.Replace('../', 'src/') | % {
-                            $fullPath = Join-Path $project (Join-Path 'resources' $_.Name)
-                            $mapping[$_.FullName.Replace("$($pwd.Path)\", '').Replace('\', '/')] = ($fullPath.Replace("$($pwd.Path)\",'')).Replace('\', '/')
-                        }
-                    }
-                }
-            }
+        if (-not (Test-Path $Path)) 
+        {
+            throw "Mapping file not found in $mappingFilePath"
         }
-    } finally {
-        Pop-Location
+
+        if (Test-Path -PathType Container $Path)
+        {
+            $mapFiles += Get-ChildItem -Recurse $Path -Filter 'map.json' -File
+        }
+        else 
+        {
+            # it exists and it's a file, don't check the name pattern
+            $mapFiles += Get-ChildItem $Path
+        }
+
+        Write-Verbose "Found $($mapFiles.Count - $count) map files in $Path"
     }
 
-    Set-Content -Value ($mapping | ConvertTo-Json) -Path $mappingFilePath -Encoding Ascii
+    end
+    {
+        $map = @{}
+        $mapFiles | % {
+            $rawHashtable = $_ | Get-Content -Raw | ConvertFrom-Json | Convert-PSObjectToHashtable
+            $mapRoot = Split-Path $_.FullName
+            if ($KeepRelativePaths) 
+            {
+                # not very elegant way to find relative for the current directory path
+                $mapRoot = $mapRoot.Substring($PSScriptRoot.Length + 1)
+                # keep original unix-style paths for git
+                $mapRoot = $mapRoot.Replace('\', '/')
+            }
+
+            $rawHashtable.GetEnumerator() | % {
+                $newKey = if ($Root) { Join-Path $Root $_.Key } else { $_.Key }
+                $newValue = if ($KeepRelativePaths) { ($mapRoot + '/' + $_.Value) } else { Join-Path $mapRoot $_.Value } 
+                $map[$newKey] = $newValue
+            }
+        }
+
+        return $map
+    }
 }
 
 
 <#
-.EXAMPLE Send-GitDiffToSd -diffArg1 45555786714d656bd31cbce67dbccb89c433b9cb -diffArg2 45555786714d656bd31cbce67dbccb89c433b9cb~1 -pathToAdmin d:\e\ps_dev\admin
+.EXAMPLE Send-GitDiffToSd -diffArg1 32b90c048aa0c5bc8e67f96a98ea01c728c4a5be~1 -diffArg2 32b90c048aa0c5bc8e67f96a98ea01c728c4a5be -AdminRoot d:\e\ps_dev\admin
 Apply a signle commit to admin folder
 #>
 function Send-GitDiffToSd {
@@ -753,25 +826,35 @@ function Send-GitDiffToSd {
         [Parameter(Mandatory)]
         [string]$diffArg2,
         [Parameter(Mandatory)]
-        [string]$pathToAdmin,
-        [string]$mappingFilePath = "$PSScriptRoot/mapping.json",
+        [string]$AdminRoot,
         [switch]$WhatIf
     )
 
-    $patchPath = Join-Path (get-command git).Source ..\..\bin\patch
-    $m = cat -Raw $mappingFilePath | ConvertFrom-Json | Convert-PSObjectToHashtable
+    # this is only for windows, because you cannot have SD enlistment on Linux
+    $patchPath = (ls (Join-Path (get-command git).Source '..\..') -Recurse -Filter 'patch.exe').FullName
+    $m = Get-Mappings -KeepRelativePaths -Root $AdminRoot
     $affectedFiles = git diff --name-only $diffArg1 $diffArg2
+    $affectedFiles | % {
+        Write-Host -Foreground Green "Changes in file $_"
+    }
+
     $rev = Get-InvertedOrderedMap $m
     foreach ($file in $affectedFiles) {
         if ($rev.Contains) {
-            $sdFilePath = Join-Path $pathToAdmin $rev[$file].Substring('src/monad/'.Length)
+            $sdFilePath = $rev[$file]
+            if (-not $sdFilePath)
+            {
+                Write-Warning "Cannot find mapped file for $file, skipping"
+                continue
+            }
+
             $diff = git diff $diffArg1 $diffArg2 -- $file
             if ($diff) {
                 Write-Host -Foreground Green "Apply patch to $sdFilePath"
                 Set-Content -Value $diff -Path $env:TEMP\diff -Encoding Ascii
                 if ($WhatIf) {
                     Write-Host -Foreground Green "Patch content"
-                    cat $env:TEMP\diff
+                    Get-Content $env:TEMP\diff
                 } else {
                     & $patchPath --binary -p1 $sdFilePath $env:TEMP\diff
                 }
@@ -786,20 +869,26 @@ function Send-GitDiffToSd {
 
 function Start-ResGen
 {
+    [CmdletBinding()]
+    param()
+
     @("Microsoft.PowerShell.Commands.Management",
 "Microsoft.PowerShell.Commands.Utility",
 "Microsoft.PowerShell.ConsoleHost",
 "Microsoft.PowerShell.CoreCLR.Eventing",
+"Microsoft.PowerShell.LocalAccounts",
 "Microsoft.PowerShell.Security",
 "System.Management.Automation") | % {
         $module = $_
-        ls "$PSScriptRoot/src/$module/resources" | % {
+        Get-ChildItem "$PSScriptRoot/src/$module/resources" -Filter '*.resx' | % {
             $className = $_.Name.Replace('.resx', '')
-            $xml = [xml](cat -raw $_.FullName)
+            $xml = [xml](Get-Content -raw $_.FullName)
+
+            $fileName = $className
             $genSource = Get-StronglyTypeCsFileForResx -xml $xml -ModuleName $module -ClassName $className
-            $outPath = "$PSScriptRoot/src/windows-build/gen/$module/$className.cs"
-            log "ResGen for $outPath"
-            mkdir -ErrorAction SilentlyContinue (Split-Path $outPath) > $null
+            $outPath = "$PSScriptRoot/src/$module/gen/$fileName.cs"
+            Write-Verbose "ResGen for $outPath"
+            New-Item -Type Directory -ErrorAction SilentlyContinue (Split-Path $outPath) > $null
             Set-Content -Encoding Ascii -Path $outPath -Value $genSource
         }
     }
@@ -895,7 +984,24 @@ function script:Start-NativeExecution([scriptblock]$sb)
 function script:Get-StronglyTypeCsFileForResx
 {
     param($xml, $ModuleName, $ClassName)
-$body = @'
+
+    # Example
+    #
+    # $ClassName = Full.Name.Of.The.ClassFoo
+    # $shortClassName = ClassFoo
+    # $namespaceName = Full.Name.Of.The
+
+    $shortClassName = $ClassName
+    $namespaceName = $null
+
+    $lastIndexOfDot = $className.LastIndexOf(".")
+    if ($lastIndexOfDot -ne -1)
+    {
+        $namespaceName = $className.Substring(0, $lastIndexOfDot)
+        $shortClassName = $className.Substring($lastIndexOfDot + 1)
+    }
+
+$banner = @'
 //------------------------------------------------------------------------------
 // <auto-generated>
 //     This code was generated by a Start-ResGen funciton from build.psm1.
@@ -906,6 +1012,16 @@ $body = @'
 // </auto-generated>
 //------------------------------------------------------------------------------
 
+{0}
+'@
+
+$namespace = @'
+namespace {0} {{
+{1}
+}}
+'@
+
+$body = @'
 using System;
 using System.Reflection;
 
@@ -933,7 +1049,7 @@ internal class {0} {{
     internal static global::System.Resources.ResourceManager ResourceManager {{
         get {{
             if (object.ReferenceEquals(resourceMan, null)) {{
-                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("{1}.resources.{0}", typeof({0}).GetTypeInfo().Assembly);
+                global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("{1}.resources.{3}", typeof({0}).GetTypeInfo().Assembly);
                 resourceMan = temp;
             }}
             return resourceMan;
@@ -975,7 +1091,17 @@ internal class {0} {{
             $entry -f $name,$val
         }
     } | Out-String
-    $body -f $ClassName,$ModuleName,$entries
+    
+    $bodyCode = $body -f $shortClassName,$ModuleName,$entries,$ClassName
+
+    if ($NamespaceName)
+    {
+        $bodyCode = $namespace -f $NamespaceName, $bodyCode
+    }
+
+    $resultCode = $banner -f $bodyCode
+
+    return $resultCode -replace "`r`n?|`n","`r`n"
 }
 
 function New-MSIPackage
