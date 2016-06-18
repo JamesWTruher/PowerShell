@@ -369,6 +369,20 @@ namespace Microsoft.PowerShell.Commands
 
             foreach (string path in paths)
             {
+                /**** Symbolic Link Processing ***/
+
+                string pathDir = path; //pathDir is processed in case path is a symbolic link
+
+                if (path.Contains(@"Microsoft.PowerShell.Core\FileSystem::")) //symbolic links contain this path
+                {
+                        pathDir = pathDir.Replace(@"Microsoft.PowerShell.Core\FileSystem::", ""); //remove extraneous paths for FollowSymLink
+                        pathDir = LinuxPlatform.FollowSymLink(pathDir); //return the path the link points too 
+                        pathDir = pathDir.Replace(@"./", @"\"); //replace beginning ./ in symlink for just the final folder name
+                        pathDir = System.IO.Path.Combine (System.IO.Path.GetDirectoryName(path), pathDir); //append the folder name onto the root directory
+                }
+
+                /*** End Symbolic Link Processing ***/
+
                 switch (ParameterSetName)
                 {
                     case childrenSet:
