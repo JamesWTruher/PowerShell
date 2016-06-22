@@ -584,11 +584,14 @@ namespace System.Management.Automation
             //  3. If 'PublicKeyToken' of the requested assembly is specified (not Null or EmptyArray), then the PublicKenToken of the loaded assembly should be the same.
             //
 
+            
             // Version of the requested assembly should be the same or before the version of loaded assembly
+            /* TODO Temporarily commented out to identify the issue
             if (requestedAssembly.Version != null && requestedAssembly.Version.CompareTo(loadedAssembly.Version) > 0)
             {
                 return false;
             }
+            */
 
             // CultureName of requested assembly and loaded assembly should be the same
             string requestedCultureName = requestedAssembly.CultureName;
