@@ -10,11 +10,11 @@ using System.Collections.Generic;
 
 namespace System.Management.Automation
 {
-    internal partial class PowerShellAssemblyLoader
+    internal partial class PowerShellAssemblyLoadContext
     {
         private Dictionary<string, string> InitializeTypeCatalog()
         {
-            Dictionary<string, string> typeCatalog = new Dictionary<string, string>(2624, StringComparer.OrdinalIgnoreCase);
+            Dictionary<string, string> typeCatalog = new Dictionary<string, string>(2702, StringComparer.OrdinalIgnoreCase);
             typeCatalog["Microsoft.CodeAnalysis.CaseInsensitiveComparison"] = "Microsoft.CodeAnalysis, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
             typeCatalog["Microsoft.CodeAnalysis.ScriptCompilationInfo"] = "Microsoft.CodeAnalysis, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
             typeCatalog["Microsoft.CodeAnalysis.ICompilationUnitSyntax"] = "Microsoft.CodeAnalysis, Version=1.3.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
@@ -603,6 +603,63 @@ namespace System.Management.Automation
             typeCatalog["Microsoft.CSharp.RuntimeBinder.CSharpBinderFlags"] = "Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["Microsoft.CSharp.RuntimeBinder.RuntimeBinderException"] = "Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["Microsoft.CSharp.RuntimeBinder.RuntimeBinderInternalCompilerException"] = "Microsoft.CSharp, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["Microsoft.Management.Infrastructure.CimPropertyDeclaration"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimException"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodResultBase"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimQualifier"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimInstance"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimType"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodParameterDeclaration"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimSystemProperties"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodResult"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimClass"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimSession"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimSubscriptionResult"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodStreamedResult"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimFlags"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimSubscriptionDeliveryType"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimConverter"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodParametersCollection"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodParameter"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimProperty"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.NativeErrorCode"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.CimMethodDeclaration"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Generic.CimAsyncStatus"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Generic.CimAsyncMultipleResults`1"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Generic.CimAsyncResult`1"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Generic.CimKeyedCollection`1"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Generic.CimReadOnlyKeyedCollection`1"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Serialization.CimDeserializer"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Serialization.InstanceSerializationOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Serialization.ClassSerializationOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Serialization.CimSerializer"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.ProxyType"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimOperationOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimOperationFlags"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.PasswordAuthenticationMechanism"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CertificateAuthenticationMechanism"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.ImpersonatedAuthenticationMechanism"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimSubscriptionDeliveryOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.DComSessionOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.PacketEncoding"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimSessionOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimPromptType"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimCallbackMode"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimResponseType"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimWriteMessageChannel"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.WriteMessageCallback"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.WriteProgressCallback"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.WriteErrorCallback"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.PromptUserCallback"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.ImpersonationType"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.CimCredential"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Options.WSManSessionOptions"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Serialization.CimMofDeserializer+OnClassNeeded"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["Microsoft.Management.Infrastructure.Serialization.CimMofDeserializer+GetIncludedFileContent"] = "Microsoft.Management.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["._MI_UserCredentials+<unnamed-type-credentials>"] = "Microsoft.Management.Infrastructure.Native, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["._MI_Datetime+<unnamed-type-u>"] = "Microsoft.Management.Infrastructure.Native, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["._TP_CALLBACK_ENVIRON_V3+<unnamed-type-u>"] = "Microsoft.Management.Infrastructure.Native, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
+            typeCatalog["._TP_CALLBACK_ENVIRON_V3+<unnamed-type-u>+<unnamed-type-s>"] = "Microsoft.Management.Infrastructure.Native, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35";
             typeCatalog["Microsoft.VisualBasic.CallType"] = "Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["Microsoft.VisualBasic.Constants"] = "Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["Microsoft.VisualBasic.HideModuleNameAttribute"] = "Microsoft.VisualBasic, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
@@ -1036,6 +1093,8 @@ namespace System.Management.Automation
             typeCatalog["System.Diagnostics.StackFrame"] = "System.Diagnostics.StackTrace, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Diagnostics.StackFrameExtensions"] = "System.Diagnostics.StackTrace, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Diagnostics.StackTrace"] = "System.Diagnostics.StackTrace, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Diagnostics.DelimitedListTraceListener"] = "System.Diagnostics.TextWriterTraceListener, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Diagnostics.TextWriterTraceListener"] = "System.Diagnostics.TextWriterTraceListener, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Diagnostics.CodeAnalysis.SuppressMessageAttribute"] = "System.Diagnostics.Tools, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.CodeDom.Compiler.GeneratedCodeAttribute"] = "System.Diagnostics.Tools, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Diagnostics.BooleanSwitch"] = "System.Diagnostics.TraceSource, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
@@ -2079,6 +2138,21 @@ namespace System.Management.Automation
             typeCatalog["System.Collections.Generic.KeyValuePair`2"] = "System.Runtime, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Runtime.CompilerServices.ConditionalWeakTable`2+CreateValueCallback"] = "System.Runtime, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Diagnostics.DebuggableAttribute+DebuggingModes"] = "System.Runtime, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.CallConvCdecl"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.CallConvFastcall"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.CallConvStdcall"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.CallConvThiscall"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsBoxed"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsByValue"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsCopyConstructed"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsExplicitlyDereferenced"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsImplicitlyDereferenced"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsJitIntrinsic"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsLong"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsSignUnspecifiedByte"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.IsUdtReturn"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.NativeCppClassAttribute"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Runtime.CompilerServices.RequiredAttributeAttribute"] = "System.Runtime.CompilerServices.VisualC, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.BitConverter"] = "System.Runtime.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Convert"] = "System.Runtime.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Environment"] = "System.Runtime.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
@@ -2456,6 +2530,10 @@ namespace System.Management.Automation
             typeCatalog["System.Threading.ThreadLocal`1"] = "System.Threading, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Threading.Volatile"] = "System.Threading, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Threading.WaitHandleCannotBeOpenedException"] = "System.Threading, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Threading.IOCompletionCallback"] = "System.Threading.Overlapped, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Threading.NativeOverlapped"] = "System.Threading.Overlapped, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Threading.PreAllocatedOverlapped"] = "System.Threading.Overlapped, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
+            typeCatalog["System.Threading.ThreadPoolBoundHandle"] = "System.Threading.Overlapped, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.AggregateException"] = "System.Threading.Tasks, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.OperationCanceledException"] = "System.Threading.Tasks, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
             typeCatalog["System.Threading.CancellationToken"] = "System.Threading.Tasks, Version=4.0.10.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a";
