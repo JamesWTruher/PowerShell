@@ -62,7 +62,6 @@ namespace System.Management.Automation
             _psVersionTable[PSVersionInfo.PSVersionName] = _psV51Version;
             _psVersionTable["PSEdition"] = PSEditionValue;
             _psVersionTable["BuildVersion"] = GetBuildVersion();
-            _psVersionTable["GitCommitId"] = GetCommitInfo();
             _psVersionTable["PSCompatibleVersions"] = new Version[] { _psV1Version, _psV2Version, _psV3Version, _psV4Version, _psV5Version, _psV51Version };
             _psVersionTable[PSVersionInfo.SerializationVersionName] = new Version(InternalSerializer.DefaultVersion);
             _psVersionTable[PSVersionInfo.PSRemotingProtocolVersionName] = RemotingConstants.ProtocolVersion;
@@ -86,28 +85,11 @@ namespace System.Management.Automation
             return new Version(buildVersion);
         }
 
-        // Get the commit id from the powershell.version file. If the powershell.version file doesn't exist, use the string "N/A"
-        static internal string GetCommitInfo()
-        {
-            try {
-                string assemblyPath = IO.Path.GetDirectoryName(typeof(PSVersionInfo).GetTypeInfo().Assembly.Location);
-                return (IO.File.ReadAllLines(IO.Path.Combine(assemblyPath,"powershell.version"))[0]);
-            }
-            catch (Exception e){
-                return e.Message;
-            }
-        }
-
         #region Private helper methods
 
         // Gets the current WSMan stack version from the registry.
         private static Version GetWSManStackVersion()
         {
-            if (!Platform.HasRegistrySupport())
-            {
-                return new Version(1, 0);
-            }
-
             Version version = null;
 
             try

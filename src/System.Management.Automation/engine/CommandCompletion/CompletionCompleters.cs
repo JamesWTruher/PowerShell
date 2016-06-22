@@ -36,8 +36,7 @@ namespace System.Management.Automation
         static CompletionCompleters()
         {
 #if CORECLR
-            // Porting note: removed until we have full assembly loading solution
-            // ClrFacade.AddAssemblyLoadHandler(UpdateTypeCacheOnAssemblyLoad);
+            ClrFacade.AddAssemblyLoadHandler(UpdateTypeCacheOnAssemblyLoad);
 #else
             AppDomain.CurrentDomain.AssemblyLoad += UpdateTypeCacheOnAssemblyLoad;
 #endif
@@ -4325,9 +4324,8 @@ namespace System.Management.Automation
                             {
                                 var sessionStateInternal = executionContext.EngineSessionState;
                                 completionText = sessionStateInternal.NormalizeRelativePath(path, sessionStateInternal.CurrentLocation.ProviderPath);
-                                string parentDirectory = ".." + Path.DirectorySeparatorChar;
-                                if (!completionText.StartsWith(parentDirectory, StringComparison.Ordinal))
-                                    completionText = Path.Combine(".", completionText);
+                                if (!completionText.StartsWith("..\\", StringComparison.Ordinal))
+                                    completionText = ".\\" + completionText;
                             }
                             catch (Exception e)
                             {
@@ -4465,12 +4463,6 @@ namespace System.Management.Automation
 
         internal static List<string> GetFileShares(string machine, bool ignoreHidden)
         {
-            // Platform notes: don't throw an exception since this is being used in auto-completion
-            if (!Platform.HasFileShares())
-            {
-                return new List<string>();
-            }
-
             IntPtr shBuf;
             uint numEntries;
             uint totalEntries;

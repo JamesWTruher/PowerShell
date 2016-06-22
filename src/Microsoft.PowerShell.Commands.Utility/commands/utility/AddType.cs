@@ -1059,9 +1059,8 @@ namespace Microsoft.PowerShell.Commands
         private static PortableExecutableReference ObjectImplementationAssemblyReference =
             MetadataReference.CreateFromFile(typeof(object).GetTypeInfo().Assembly.Location);
 
-        // This assembly should be System.Runtime.dll
         private static PortableExecutableReference ObjectDeclaredAssemblyReference =
-            MetadataReference.CreateFromFile(ClrFacade.GetAssemblies(typeof(object).FullName).First().Location);
+            MetadataReference.CreateFromFile(System.IO.Path.Combine(FrameworkFolder, "System.Runtime.dll"));
 
         // CoreCLR RC2 bits don't have SecureString. We are using a separate assembly with SecureString implementation.
         // This fact is an implementation detail and should not require the user to specify one more assembly, 
@@ -1148,7 +1147,7 @@ namespace Microsoft.PowerShell.Commands
             // First try by strong name
             try
             {
-                loadedAssembly = ClrFacade.Load(new AssemblyName(assemblyName));
+                loadedAssembly = System.Reflection.Assembly.Load(new AssemblyName(assemblyName));
             }
             // Generates a FileNotFoundException if you can't load the strong type.
             // So we'll try from the short name.
@@ -1932,7 +1931,7 @@ namespace Microsoft.PowerShell.Commands
             {
                 foreach(string path in paths)
                 {
-                    generatedTypes.AddRange(ClrFacade.LoadFrom(path).GetTypes());
+                    generatedTypes.AddRange(System.Reflection.Assembly.LoadFrom(path).GetTypes());
                 }
             }
             // Load the assembly by name
@@ -2050,7 +2049,7 @@ namespace Microsoft.PowerShell.Commands
             // First try by strong name
             try
             {
-                loadedAssembly = ClrFacade.Load(assemblyName);
+                loadedAssembly = System.Reflection.Assembly.Load(assemblyName);
             }
             // Generates a FileNotFoundException if you can't load the strong type.
             // So we'll try from the short name.
@@ -2062,7 +2061,7 @@ namespace Microsoft.PowerShell.Commands
             // Next, try an exact match
             if (StrongNames.Value.ContainsKey(assemblyName))
             {
-                return ClrFacade.Load(StrongNames.Value[assemblyName]);
+                return System.Reflection.Assembly.Load(StrongNames.Value[assemblyName]);
             }
 
             // If the assembly name doesn't contain wildcards, return null. The caller generates an error here.
@@ -2105,7 +2104,7 @@ namespace Microsoft.PowerShell.Commands
                 return null;
 
             // Otherwise, load the assembly.
-            return ClrFacade.Load(matchedStrongName);
+            return System.Reflection.Assembly.Load(matchedStrongName);
         }
 
         private static ConcurrentDictionary<string, string> InitializeStrongNameDictionary()

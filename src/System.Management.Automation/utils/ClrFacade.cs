@@ -97,7 +97,7 @@ namespace System.Management.Automation
 #if CORECLR
             try
             {
-            return process.SafeHandle.DangerousGetHandle();
+                return process.SafeHandle.DangerousGetHandle();
             }
             catch (InvalidOperationException)
             {
@@ -241,6 +241,7 @@ namespace System.Management.Automation
         #endregion Marshal
 
         #region Assembly
+        
         /// <summary>
         /// Facade for AssemblyName.GetAssemblyName(string)
         /// </summary>
@@ -293,32 +294,6 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Porting note: Load assembly by name through the AssemblyLoadContext.
-        /// This is to ensure that the types get cached.
-        /// </summary>
-        internal static Assembly Load(AssemblyName assembly)
-        {
-#if CORECLR
-            return PSAssemblyLoadContext.LoadFromAssemblyName(assembly);
-#else
-            return Assembly.Load(assembly);
-#endif
-        }
-
-        /// <summary>
-        /// Same as the above, but overloaded for a name in a string.
-        /// </summary>
-        internal static Assembly Load(string assembly)
-        {
-#if CORECLR
-            return PSAssemblyLoadContext.LoadFromAssemblyName(new AssemblyName(assembly));
-#else
-            return Assembly.Load(assembly);
-#endif
-        }
-
-
-        /// <summary>
         /// Facade for EnumBuilder.CreateTypeInfo
         /// </summary>
         /// <remarks>
@@ -350,7 +325,7 @@ namespace System.Management.Automation
             {
                 throw new ArgumentNullException("assemblyShortName");
             }
-
+            
             return PSAssemblyLoadContext.ProbeAssemblyFileForMetadataAnalysis(assemblyShortName, additionalSearchPath);
         }
 
@@ -374,17 +349,25 @@ namespace System.Management.Automation
         /// <summary>
         /// Add the AssemblyLoad handler
         /// </summary>
-        // Porting note: disabled until full solution comes
-        // internal static void AddAssemblyLoadHandler(Action<Assembly> handler)
-        // {
-        //     PSAssemblyLoadContext.AssemblyLoad += handler;
-        // }
+        internal static void AddAssemblyLoadHandler(Action<Assembly> handler)
+        {
+            PSAssemblyLoadContext.AssemblyLoad += handler;
+        }
 
-        private static PowerShellAssemblyLoader PSAssemblyLoadContext
+        private static volatile PowerShellAssemblyLoadContext _psLoadContext;
+        private static PowerShellAssemblyLoadContext PSAssemblyLoadContext
         {
             get
             {
-                return PowerShellAssemblyLoader.Instance;
+                if (_psLoadContext == null)
+                {
+                    _psLoadContext = AssemblyLoadContext.Default as PowerShellAssemblyLoadContext;
+                    if (_psLoadContext == null)
+                    {
+                        throw new InvalidOperationException(ParserStrings.InvalidAssemblyLoadContextInUse);
+                    }
+                }
+                return _psLoadContext;
             }
         }
 #endif
@@ -557,8 +540,20 @@ namespace System.Management.Automation
         /// </summary>
         internal static DirectoryInfo GetParent(string path)
         {
-            // Porting note: this is in recent CoreCLR
+#if CORECLR
+            // Implementation copied from .NET source code.
+            if (string.IsNullOrEmpty(path))
+                throw new ArgumentNullException("path");
+
+            string fullPath = Path.GetFullPath(path);
+
+            string s = Path.GetDirectoryName(fullPath);
+            if (s == null)
+                return null;
+            return new DirectoryInfo(s);
+#else
             return Directory.GetParent(path);
+#endif
         }
 
         /// <summary>

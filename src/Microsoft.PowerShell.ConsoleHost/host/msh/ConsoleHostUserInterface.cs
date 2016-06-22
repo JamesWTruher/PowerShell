@@ -14,9 +14,7 @@ using System.Management.Automation.Internal;
 using System.Management.Automation.Host;
 using System.Security;
 using Dbg = System.Management.Automation.Diagnostics;
-#if !PORTABLE
 using ConsoleHandle = Microsoft.Win32.SafeHandles.SafeFileHandle;
-#endif
 
 namespace Microsoft.PowerShell
 {
@@ -61,15 +59,13 @@ namespace Microsoft.PowerShell
             this.parent = parent;
             this.rawui = new ConsoleHostRawUserInterface(this);
 
-#if PORTABLE
-            this._supportsVirtualTerminal = true;
-#else
             try
             {
                 // Turn on virtual terminal if possible.
 
                 // This might throw - not sure how exactly (no console), but if it does, we shouldn't fail to start.
                 var handle = ConsoleControl.GetActiveScreenBufferHandle();
+
                 var m = ConsoleControl.GetMode(handle);
                 if (ConsoleControl.NativeMethods.SetConsoleMode(handle.DangerousGetHandle(), (uint) (m | ConsoleControl.ConsoleModes.VirtualTerminal)))
                 {
@@ -82,7 +78,6 @@ namespace Microsoft.PowerShell
             catch
             {
             }
-#endif
 
             isInteractiveTestToolListening = false;
         }
@@ -285,9 +280,6 @@ namespace Microsoft.PowerShell
 
         private object ReadLineSafe(bool isSecureString, char? printToken)
         {
-#if PORTABLE
-            throw new PlatformNotSupportedException("Cannot read secure strings!");
-#else
             // Don't lock (instanceLock) in here -- the caller needs to do that...
 
             PreRead();
@@ -408,10 +400,7 @@ namespace Microsoft.PowerShell
             {
                 return result;
             }
-#endif
         }
-
-#if !PORTABLE
 
         /// <summary>
         ///
@@ -542,6 +531,7 @@ namespace Microsoft.PowerShell
         /// false otherwise
         /// 
         /// </returns>
+
         private static bool shouldUnsetMode(
             ConsoleControl.ConsoleModes flagToUnset,
             ref ConsoleControl.ConsoleModes m)
@@ -553,14 +543,11 @@ namespace Microsoft.PowerShell
             }
             return false;
         }
-#endif
 
         #region WriteToConsole
 
         internal void WriteToConsole(string value, bool transcribeResult)
         {
-
-#if !PORTABLE
             ConsoleHandle handle = ConsoleControl.GetActiveScreenBufferHandle();
 
             // Ensure that we're in the proper line-output mode.  We don't lock here as it does not matter if we
@@ -577,17 +564,12 @@ namespace Microsoft.PowerShell
                 m |= desiredMode;
                 ConsoleControl.SetMode(handle, m);
             }
-#endif
 
             PreWrite();
 
             // This is atomic, so we don't lock here...
 
-#if !PORTABLE
             ConsoleControl.WriteConsole(handle, value);
-#else
-            Console.Out.Write(value);
-#endif
 
             if (isInteractiveTestToolListening && Console.IsOutputRedirected)
             {
@@ -1488,9 +1470,9 @@ namespace Microsoft.PowerShell
 
 
 
-        // We use System.Environment.NewLine because we are platform-agnostic
+        // We don't use System.Environment.NewLine because we are very platform specific with our use of the win32 console APIs
 
-        internal static string Crlf = System.Environment.NewLine;
+        internal const string Crlf = "\x000D\x000A";
         private const string Tab = "\x0009";
 
         internal enum ReadLineResult
@@ -1637,9 +1619,6 @@ namespace Microsoft.PowerShell
 
         private string ReadLineFromConsole(bool endOnTab, string initialContent, bool calledFromPipeline, ref string restOfLine, ref ReadLineResult result)
         {
-#if PORTABLE
-            return ReadLineFromFile(initialContent);
-#else
             ConsoleHandle handle = ConsoleControl.GetConioDeviceHandle();
             PreRead();
             // Ensure that we're in the proper line-input mode.
@@ -1758,12 +1737,11 @@ namespace Microsoft.PowerShell
             while (true);
 
             Dbg.Assert(
-                       (s == null && result == ReadLineResult.endedOnBreak)
-                       || (s != null && result != ReadLineResult.endedOnBreak),
-                       "s should only be null if input ended with a break");
+                    (s == null && result == ReadLineResult.endedOnBreak)
+                || (s != null && result != ReadLineResult.endedOnBreak),
+                "s should only be null if input ended with a break");
 
             return s;
-#endif
         }
 
         /// <summary>
@@ -1771,7 +1749,6 @@ namespace Microsoft.PowerShell
         /// </summary>
         /// <param name="cursorPosition">the cursor position where 'tab' is hit</param>
         /// <returns></returns>
-#if !PORTABLE
         private char GetCharacterUnderCursor(Coordinates cursorPosition)
         {
             Rectangle region = new Rectangle(0, cursorPosition.Y, RawUI.BufferSize.Width - 1, cursorPosition.Y);
@@ -1794,7 +1771,6 @@ namespace Microsoft.PowerShell
             Dbg.Assert(false, "the character at the cursor should be retrieved, never gets to here");
             return '\0';
         }
-#endif
 
 
         /// <summary>
@@ -1835,15 +1811,13 @@ namespace Microsoft.PowerShell
         /// </returns>
         internal string ReadLineWithTabCompletion(Executor exec)
         {
-            string input = null;
-            string lastInput = "";
-
-            ReadLineResult rlResult = ReadLineResult.endedOnEnter;
-
-#if !PORTABLE
             ConsoleHandle handle = ConsoleControl.GetActiveScreenBufferHandle();
 
+            string input = null;
+            string lastInput = "";
             string lastCompletion = "";
+
+            ReadLineResult rlResult = ReadLineResult.endedOnEnter;
             Size screenBufferSize = RawUI.BufferSize;
 
             // Save the cursor position at the end of the prompt string so that we can restore it later to write the
@@ -1853,7 +1827,6 @@ namespace Microsoft.PowerShell
 
             CommandCompletion commandCompletion = null;
             string completionInput = null;
-#endif
 
             do
             {
@@ -1864,6 +1837,9 @@ namespace Microsoft.PowerShell
 
                 input = ReadLine(true, lastInput, out rlResult, false, false);
 
+                Coordinates endOfInputCursorPos = RawUI.CursorPosition;
+                string completedInput = null;
+
                 if (input == null)
                 {
                     break;
@@ -1873,13 +1849,6 @@ namespace Microsoft.PowerShell
                 {
                     break;
                 }
-
-#if PORTABLE // Portable code only ends on enter (or no input), so tab is not processed
-                throw new PlatformNotSupportedException("This readline state is unsupported in portable code!");
-#else
-
-                Coordinates endOfInputCursorPos = RawUI.CursorPosition;
-                string completedInput = null;
 
                 if (rlResult == ReadLineResult.endedOnTab || rlResult == ReadLineResult.endedOnShiftTab)
                 {
@@ -1984,7 +1953,6 @@ namespace Microsoft.PowerShell
 
                     lastInput = completedInput;
                 }
-#endif
             }
             while (true);
 
@@ -2000,7 +1968,6 @@ namespace Microsoft.PowerShell
             return input;
         }
 
-#if !PORTABLE
         private void SendLeftArrows(int length)
         {
             var inputs = new ConsoleControl.INPUT[length * 2];
@@ -2030,7 +1997,6 @@ namespace Microsoft.PowerShell
 
             ConsoleControl.MimicKeyPress(inputs);
         }
-#endif
 
         private CommandCompletion GetNewCompletionResults(string input)
         {
