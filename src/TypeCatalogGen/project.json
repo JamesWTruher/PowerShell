@@ -2,9 +2,8 @@
     "name": "TypeCatalogGen",
     "version": "1.0.0-*",
     "description": "Generates CorePsTypeCatalog.cs given powershell.inc",
-    "authors": [ "andschwa" ],
 
-    "compilationOptions": {
+    "buildOptions": {
         "emitEntryPoint": true
     },
 

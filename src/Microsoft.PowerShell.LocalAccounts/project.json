@@ -1,0 +1,29 @@
+{
+    "name": "Microsoft.PowerShell.LocalAccounts",
+    "version": "1.0.0-*",
+
+    "buildOptions": {
+        "keyFile": "../signing/visualstudiopublic.snk",
+        "delaySign": true,
+        "publicSign": false,
+        "warningsAsErrors": true
+    },
+
+    "dependencies": {
+        "System.Management.Automation": "1.0.0-*"
+    },
+
+    "frameworks": {
+        "netstandard1.5": {
+            "imports": [ "dnxcore50" ],
+            "buildOptions": {
+                "define": [ "CORECLR" ]
+            },
+            "dependencies": {
+                "System.Net.NameResolution": "4.0.0-rc2-24027"
+            }
+        },
+        "net451": {
+        }
+    }
+}

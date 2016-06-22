@@ -2,43 +2,59 @@
     "name": "Microsoft.PowerShell.ConsoleHost",
     "version": "1.0.0-*",
     "description": "PowerShell Host",
-    "authors": [ "sevoroby", "andschwa" ],
 
-    "compilationOptions": {
+    "buildOptions": {
+        "keyFile": "../signing/visualstudiopublic.snk",
+        "delaySign": true,
+        "publicSign": false,
         "warningsAsErrors": true,
-        "allowUnsafe": true
+        "allowUnsafe": true,
+        "copyToOutput": {
+            "include": [
+                "Modules",
+                "../Modules",
+                "powershell.exe",
+                "../../powershell.version"
+            ]
+        }
+    },
+
+    "publishOptions": {
+        "include": [
+            "Modules",
+            "../Modules",
+            "powershell.exe",
+            "../../powershell.version"
+        ]
     },
 
     "dependencies": {
         "Microsoft.PowerShell.PSReadLine": "1.0.0-*",
+        "Microsoft.PowerShell.Commands.Diagnostics": "1.0.0-*",
         "Microsoft.PowerShell.Commands.Management": "1.0.0-*",
-        "Microsoft.PowerShell.Commands.Utility": "1.0.0-*"
+        "Microsoft.PowerShell.Commands.Utility": "1.0.0-*",
+        "Microsoft.PowerShell.LocalAccounts": "1.0.0-*",
+        "Microsoft.PowerShell.PackageManagement": "1.0.0-*"
     },
-
-    "content": [
-        "Modules",
-        "../Modules",
-        "powershell.exe",
-        "../../powershell.version"
-    ],
 
     "frameworks": {
         "netstandard1.5": {
             "imports": [ "dnxcore50", "portable-net45+win8" ],
-            "compilationOptions": {
+            "buildOptions": {
                 "define": [ "CORECLR", "PORTABLE" ]
             },
             "dependencies": {
                 "Newtonsoft.Json": "8.0.2",
-                "System.Xml.XDocument": "4.0.11-rc2-24103",
-                "System.IO.MemoryMappedFiles": "4.0.0-rc2-24103"
+                "System.Xml.XDocument": "4.0.11-rc2-24027",
+                "System.IO.MemoryMappedFiles": "4.0.0-rc2-24027"
             }
         },
         "net451": {
+            "dependencies": {
+                "Microsoft.PowerShell.ScheduledJob": "1.0.0-*",
+                "Microsoft.PowerShell.Workflow.ServiceCore": "1.0.0-*",
+                "Microsoft.PowerShell.GraphicalHost": "1.0.0-*"
+            }
         }
-    },
-
-    "compile": [
-        "../windows-build/gen/Microsoft.PowerShell.ConsoleHost/*.cs"
-    ]
+    }
 }

@@ -447,10 +447,12 @@ namespace System.Management.Automation.Host
             {
                 Object value = versionInfo[versionKey];
 
-                var arrayValue = value as object[];
-                string valueString = arrayValue != null ? string.Join(", ", arrayValue) : value.ToString();
-
-                psVersionInfo.AppendLine(versionKey + ": " + valueString);
+                if (value != null)
+                {
+                    var arrayValue = value as object[];
+                    string valueString = arrayValue != null ? string.Join(", ", arrayValue) : value.ToString();
+                    psVersionInfo.AppendLine(versionKey + ": " + valueString);
+                }
             }
 
             // Transcribe the transcript header

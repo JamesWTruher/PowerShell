@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Management.Automation.Internal;
 using System.Management.Automation.Language;
 using System.Management.Automation.Runspaces;
 using System.Text;
@@ -104,6 +105,17 @@ namespace System.Management.Automation
                 var moduleManifestProperties = PsUtils.GetModuleManifestProperties(modulePath, PsUtils.FastModuleManifestAnalysisPropertyNames);
                 if (moduleManifestProperties != null)
                 {
+                    Version version;
+                    if (ModuleUtils.IsModuleInVersionSubdirectory(modulePath, out version))
+                    {
+                        var versionInManifest = LanguagePrimitives.ConvertTo<Version>(moduleManifestProperties["ModuleVersion"]);
+                        if (version != versionInManifest)
+                        {
+                            ModuleIntrinsics.Tracer.WriteLine("ModuleVersion in manifest does not match versioned module directory, skipping module: {0}", modulePath);
+                            return null;
+                        }
+                    }
+
                     result = new ConcurrentDictionary<string, CommandTypes>(3, moduleManifestProperties.Count, StringComparer.OrdinalIgnoreCase);
 
                     var sawWildcard = false;
@@ -1015,8 +1027,10 @@ namespace System.Management.Automation
         {
             cacheStoreLocation = 
                 Environment.GetEnvironmentVariable("PSModuleAnalysisCachePath") ??
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                             @"Microsoft\Windows\PowerShell\ModuleAnalysisCache");
+                (Platform.IsWindows
+                 ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                                @"Microsoft\Windows\PowerShell\ModuleAnalysisCache")
+                 : Path.Combine(Platform.SelectProductNameForDirectory(Platform.XDG_Type.CACHE), "ModuleAnalysisCache"));
         }
     }
 

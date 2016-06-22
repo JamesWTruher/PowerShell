@@ -18,7 +18,7 @@ install:
   - ps: $fileContent += "`n-----END RSA PRIVATE KEY-----`n"
   - ps: Set-Content c:\users\appveyor\.ssh\id_rsa $fileContent
   - git config --global url.git@github.com:.insteadOf https://github.com/
-  - git submodule update --init -- src/windows-build src/Modules/Pester
+  - git submodule update --init -- src/Modules/Pester
   - ps: Import-Module .\build.psm1; Start-PSBootstrap
 
 build_script:
@@ -59,6 +59,11 @@ test_script:
       {
         throw "$($x.'test-results'.failures) tests in test/fullCLR failed"
       }
+      #
+      # Portable module test
+      Write-Host -Foreground Green 'Test use of cross-platform binary module'
+      Import-Module ./docs/cmdlet-example/bin/Debug/netstandard1.3/SendGreeting.dll
+      Send-Greeting -Name World
 
 
 on_finish: 

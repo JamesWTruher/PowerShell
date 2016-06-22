@@ -53,6 +53,7 @@ namespace System.Management.Automation.Language
 
     internal interface IParameterMetadataProvider
     {
+        bool HasAnyScriptBlockAttributes();
         RuntimeDefinedParameterDictionary GetParameterMetadata(bool automaticPositions, ref bool usesCmdletBinding);
         IEnumerable<Attribute> GetScriptBlockAttributes();
 
@@ -1131,18 +1132,35 @@ namespace System.Management.Automation.Language
             if (!PostParseChecksPerformed)
             {
                 Parser parser = new Parser();
-                PerformPostParseChecks(parser);
+                // we call PerformPostParseChecks on root ScriptBlockAst, to obey contract of SymbolResolver.
+                // It needs to be run from the top of the tree.
+                // It's ok to report an error from a different part of AST in this case.
+                var root = GetRootScriptBlockAst();
+                root.PerformPostParseChecks(parser);
                 if (parser.ErrorList.Any())
                 {
                     throw new ParseException(parser.ErrorList.ToArray());
                 }
             }
+
             if (HadErrors)
             {
                 throw new PSInvalidOperationException();
             }
 
             return new ScriptBlock(this, isFilter: false);
+        }
+
+        private ScriptBlockAst GetRootScriptBlockAst()
+        {
+            ScriptBlockAst rootScriptBlockAst = this;
+            ScriptBlockAst parent;
+            while ((parent = Ast.GetAncestorAst<ScriptBlockAst>(rootScriptBlockAst.Parent)) != null)
+            {
+                rootScriptBlockAst = parent;
+            }
+
+            return rootScriptBlockAst;
         }
 
         /// <summary>
@@ -1365,6 +1383,11 @@ namespace System.Management.Automation.Language
         #endregion Visitors
 
         #region IParameterMetadataProvider implementation
+
+        bool IParameterMetadataProvider.HasAnyScriptBlockAttributes()
+        {
+            return Attributes.Count > 0 || ParamBlock != null && ParamBlock.Attributes.Count > 0;
+        }
 
         RuntimeDefinedParameterDictionary IParameterMetadataProvider.GetParameterMetadata(bool automaticPositions, ref bool usesCmdletBinding)
         {
@@ -3371,6 +3394,11 @@ namespace System.Management.Automation.Language
 
         #region IParameterMetadataProvider implementation
 
+        bool IParameterMetadataProvider.HasAnyScriptBlockAttributes()
+        {
+            return ((IParameterMetadataProvider)_functionDefinitionAst).HasAnyScriptBlockAttributes();
+        }
+
         ReadOnlyCollection<ParameterAst> IParameterMetadataProvider.Parameters
         {
             get { return ((IParameterMetadataProvider)_functionDefinitionAst).Parameters; }
@@ -3488,6 +3516,11 @@ namespace System.Management.Automation.Language
         {
             Diagnostics.Assert(false, "code should be unreachable");
             return Ast.EmptyPSTypeNameArray;
+        }
+
+        public bool HasAnyScriptBlockAttributes()
+        {
+            return ((IParameterMetadataProvider)Body).HasAnyScriptBlockAttributes();
         }
 
         public RuntimeDefinedParameterDictionary GetParameterMetadata(bool automaticPositions, ref bool usesCmdletBinding)
@@ -3762,6 +3795,11 @@ namespace System.Management.Automation.Language
         #endregion Visitors
 
         #region IParameterMetadataProvider implementation
+
+        bool IParameterMetadataProvider.HasAnyScriptBlockAttributes()
+        {
+            return ((IParameterMetadataProvider)Body).HasAnyScriptBlockAttributes();
+        }
 
         RuntimeDefinedParameterDictionary IParameterMetadataProvider.GetParameterMetadata(bool automaticPositions, ref bool usesCmdletBinding)
         {
@@ -6802,9 +6840,10 @@ namespace System.Management.Automation.Language
                 if (_configurationBuildInParameters == null)
                 {
                     _configurationBuildInParameters = new List<ParameterAst>();
-                    var sb = ScriptBlock.Create(ConfigurationBuildInParametersStr);
 
-                    var sba = sb.Ast as ScriptBlockAst;
+                    Token[] tokens;
+                    ParseError[] errors;
+                    var sba = Parser.ParseInput(ConfigurationBuildInParametersStr, out tokens, out errors);
                     if (sba != null)
                     {
                         foreach (var parameterAst in sba.ParamBlock.Parameters)
@@ -6825,9 +6864,10 @@ namespace System.Management.Automation.Language
                 if (_configurationBuildInParameterAttrAsts == null)
                 {
                     _configurationBuildInParameterAttrAsts = new List<AttributeAst>();
-                    var sb = ScriptBlock.Create(ConfigurationBuildInParametersStr);
 
-                    var sba = sb.Ast as ScriptBlockAst;
+                    Token[] tokens;
+                    ParseError[] errors;
+                    var sba = Parser.ParseInput(ConfigurationBuildInParametersStr, out tokens, out errors);
                     if (sba != null)
                     {
                         if (_configurationBuildInParameters == null)
@@ -6859,16 +6899,16 @@ namespace System.Management.Automation.Language
                 if (_configurationExtraParameterStatements == null)
                 {
                     _configurationExtraParameterStatements = new List<StatementAst>();
-                    var sb = ScriptBlock.Create(@"
+                    Token[] tokens;
+                    ParseError[] errors;
+                    var sba = Parser.ParseInput(@"
                         Import-Module Microsoft.PowerShell.Management -Verbose:$false
                         Import-Module PSDesiredStateConfiguration -Verbose:$false
                         $toBody = @{}+$PSBoundParameters
                         $toBody.Remove(""OutputPath"")
                         $toBody.Remove(""ConfigurationData"")
                         $ConfigurationData = $psboundparameters[""ConfigurationData""]
-                        $Outputpath = $psboundparameters[""Outputpath""]");
-
-                    var sba = sb.Ast as ScriptBlockAst;
+                        $Outputpath = $psboundparameters[""Outputpath""]", out tokens, out errors);
                     if (sba != null)
                     {
                         foreach (var statementAst in sba.EndBlock.Statements)

@@ -185,15 +185,17 @@ namespace Microsoft.PowerShell
                 {
                     profileDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) +
                         @"\Microsoft\Windows\PowerShell";
-                } else
+
+                    if (!Directory.Exists(profileDir))
+                    {
+                        Directory.CreateDirectory(profileDir);
+                    }
+                }
+                else
                 {
-                    profileDir = System.IO.Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".powershell");
+                    profileDir = Platform.SelectProductNameForDirectory(Platform.XDG_Type.CACHE);
                 }
 
-                if (!Directory.Exists(profileDir))
-                {
-                    Directory.CreateDirectory(profileDir);
-                }
                 ClrFacade.SetProfileOptimizationRoot(profileDir);
             }
             catch
@@ -268,7 +270,6 @@ namespace Microsoft.PowerShell
                             : "StartupProfileData-NonInteractive");
                     exitCode = theConsoleHost.Run(cpp, !string.IsNullOrEmpty(preStartWarning));
                 }
-
             }
             finally
             {
@@ -1359,7 +1360,7 @@ namespace Microsoft.PowerShell
                 inputFormat = cpp.InputFormat;
                 wasInitialCommandEncoded = cpp.WasInitialCommandEncoded;
 
-                ui.ReadFromStdin = cpp.ExplicitReadCommandsFromStdin || (Console.IsInputRedirected && !cpp.NonInteractive);
+                ui.ReadFromStdin = cpp.ExplicitReadCommandsFromStdin || Console.IsInputRedirected;
                 ui.NoPrompt = cpp.NoPrompt;
                 ui.ThrowOnReadAndPrompt = cpp.ThrowOnReadAndPrompt;
                 noExit = cpp.NoExit;
@@ -1420,7 +1421,7 @@ namespace Microsoft.PowerShell
 
                 if (ExitCode == ExitCodeInitFailure) { break; }
 
-                if (!noExit && !ui.ReadFromStdin)
+                if (!noExit)
                 {
                     // Wait for runspace to open, init, and run init script before 
                     // setting ShouldEndSession, to allow debugger to work.
@@ -2451,14 +2452,8 @@ namespace Microsoft.PowerShell
                             if (Console.IsInputRedirected)
                             {
                                 // null is also the result of reading stdin to EOF.
-
-                                if (!parent.noExit)
-                                {
-                                    parent.ShouldEndSession = true;
-                                    break;
-                                }
-
-                                ui.ReadFromStdin = false;
+                                parent.ShouldEndSession = true;
+                                break;
                             }
 
                             continue;

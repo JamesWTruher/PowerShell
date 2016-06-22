@@ -13,18 +13,24 @@ no encryption.**
 Additionally `ReadLineSafe` is not implemented, meaning `Get-Credential` fails
 with `PlatformNotSupportedException`.
 
-## `ControlPanelItemCommand.cs`
+## Files excluded from the build
 
-The file `monad/src/commands/management/ControlPanelItemCommand.cs` has been removed
-temporarily from `Microsoft.PowerShell.Commands.Management` because we
-cannot resolve `[Shell32.ShellFolderItem]` for FullCLR builds. This must be
-fixed ASAP.
+#### Microsoft.PowerShell.Commands.Management
 
-## `GetComputerInfoCommand.cs`
+- The file `ControlPanelItemCommand.cs` is excluded from all frameworks in `Microsoft.PowerShell.Commands.Management` 
+because it has dependency on `[Shell32.ShellFolderItem]` for FullCLR builds.
 
-The file
-`src\Microsoft.PowerShell.Commands.Management\commands\management\GetComputerInfoCommand.cs`
-is not currently compiled because it needs resources.
+#### Microsoft.PowerShell.GraphicalHost
+
+```
+"ManagementList/CommonControls/ExpanderButtonAutomationPeer.cs",
+"ManagementList/CommonControls/ExpanderButton.cs",
+"ManagementList/CommonControls/ExpanderButton.Generated.cs",
+"ManagementList/Common/PopupControlButton.cs",
+"ManagementList/Common/PopupControlButton.Generated.cs"
+```
+
+Excluded because they requires `UIAutomationTypes.dll`
 
 ## Jobs
 
@@ -79,14 +85,46 @@ following cmdlets that exist in the FullCLR version:
 - ConvertFrom-String
 - ConvertTo-Html
 - Export-PSSession
-- Get-TraceSource
 - Import-PSSession
 - Invoke-RestMethod
 - Invoke-WebRequest
 - Out-GridView
 - Out-Printer
 - Send-MailMessage
-- Set-TraceSource
 - Show-Command
-- Trace-Command
 - Update-List
+
+## File paths with literal backward slashes
+
+On some filesystems (Linux, OS X), file paths are allowed to contain literal
+backward slashes, '\', as valid filename characters. These slashes, when
+escaped, are not directory separators. In Bash, the backward slash is the escape
+character, so a `path/with/a\\slash` is two directories, `path` and `with`, and
+one file, `a\slash`. In PowerShell, we *will* support this using the normal
+backtick escape character, so a `path\with\a``\slash` or a
+`path/with/a``\slash`, but this edge case is *currently unsupported*.
+
+That being said, native commands will work as expected. Thus this is the current
+scenario:
+
+```powershell
+PS > Get-Content a`\slash
+Get-Content : Cannot find path '/home/andrew/src/PowerShell/a/slash' because it does not exist.
+At line:1 char:1
++ Get-Content a`\slash
++ ~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : ObjectNotFound: (/home/andrew/src/PowerShell/a/slash:String) [Get-Co
+   ntent], ItemNotFoundException
+    + FullyQualifiedErrorId : PathNotFound,Microsoft.PowerShell.Commands.GetContentCommand
+
+PS > /bin/cat a\slash
+hi
+
+```
+
+The PowerShell cmdlet `Get-Content` cannot yet understand the escaped backward
+slash, but the path is passed literally to the native command `/bin/cat`. Most
+file operations are thus implicitly supported by the native commands. The
+notable exception is `cd` since it is not a command, but a shell built-in,
+`Set-Location`. So until this issue is resolved, PowerShell cannot change to a
+directory whose name contains a literal backward slash.

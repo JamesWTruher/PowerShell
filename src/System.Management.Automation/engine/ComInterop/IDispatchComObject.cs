@@ -1,4 +1,3 @@
-#if !CORECLR
 /********************************************************************++
 Copyright (c) Microsoft Corporation.  All rights reserved.
 --********************************************************************/
@@ -509,6 +508,20 @@ namespace System.Management.Automation.ComInterop {
                 }
             }
 
+            if (typeAttr.typekind == ComTypes.TYPEKIND.TKIND_INTERFACE)
+            {
+                //We have typeinfo for custom interface. Get typeinfo for Dispatch interface.
+                typeInfo = ComTypeInfo.GetDispatchTypeInfoFromCustomInterfaceTypeInfo(typeInfo);
+                typeAttr = ComRuntimeHelpers.GetTypeAttrForTypeInfo(typeInfo);
+            }
+
+            if (typeAttr.typekind == ComTypes.TYPEKIND.TKIND_COCLASS)
+            {
+                //We have typeinfo for the COClass.  Find the default interface and get typeinfo for default interface.
+                typeInfo = ComTypeInfo.GetDispatchTypeInfoFromCoClassTypeInfo(typeInfo);
+                typeAttr = ComRuntimeHelpers.GetTypeAttrForTypeInfo(typeInfo);
+            }
+
             ComTypeDesc typeDesc = ComTypeDesc.FromITypeInfo(typeInfo, typeAttr);
 
             ComMethodDesc getItem = null;
@@ -630,5 +643,3 @@ namespace System.Management.Automation.ComInterop {
 
 #endif
 
-
-#endif

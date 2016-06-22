@@ -1,9 +1,11 @@
 {
     "name": "Microsoft.PowerShell.Commands.Management",
     "version": "1.0.0-*",
-    "authors": [ "garretts", "andschwa" ],
 
-    "compilationOptions": {
+    "buildOptions": {
+        "keyFile": "../signing/visualstudiopublic.snk",
+        "delaySign": true,
+        "publicSign": false,
         "warningsAsErrors": true,
         "allowUnsafe": true
     },
@@ -15,12 +17,36 @@
     "frameworks": {
         "netstandard1.5": {
             "imports": [ "dnxcore50" ],
-            "compilationOptions": {
-                "define": [ "CORECLR" ]
+            "buildOptions": {
+                "define": [ "CORECLR" ],
+                "compile": {
+                    "exclude": [
+                        "commands/management/ClearRecycleBinCommand.cs",
+                        "commands/management/ControlPanelItemCommand.cs",
+                        "commands/management/CommitTransactionCommand.cs",
+                        "commands/management/Computer.cs",
+                        "commands/management/Eventlog.cs",
+                        "commands/management/GetClipboardCommand.cs",
+                        "commands/management/GetTransactionCommand.cs",
+                        "commands/management/GetWMIObjectCommand.cs",
+                        "commands/management/Hotfix.cs",
+                        "commands/management/InvokeWMIMethodCommand.cs",
+                        "commands/management/RegisterWMIEventCommand.cs",
+                        "commands/management/RemoveWMIObjectCommand.cs",
+                        "commands/management/RollbackTransactionCommand.cs",
+                        "commands/management/SetClipboardCommand.cs",
+                        "commands/management/SetWMIInstanceCommand.cs",
+                        "commands/management/StartTransactionCommand.cs",
+                        "commands/management/UseTransactionCommand.cs",
+                        "commands/management/WMIHelper.cs",
+                        "commands/management/WebServiceProxy.cs",
+                        "singleshell/installer/MshManagementMshSnapin.cs"
+                    ]
+                }
             },
             "dependencies": {
-                "System.ServiceProcess.ServiceController": "4.1.0-rc2-24103",
-                "System.Net.NameResolution": "4.0.0-rc2-24103"
+                "System.ServiceProcess.ServiceController": "4.1.0-rc2-24027",
+                "System.Net.NameResolution": "4.0.0-rc2-24027"
             }
         },
         "net451": {
@@ -31,10 +57,15 @@
                 "System.Web.Services": ""
             },
             "dependencies": {
-                 "Microsoft.WSMan.Management": "1.0.0"
+                "Microsoft.WSMan.Management": "1.0.1-*"
+            },
+            "buildOptions": {
+                "compile": {
+                    "exclude": [
+                        "commands/management/ControlPanelItemCommand.cs"
+                    ]
+                }
             }
         }
-    },
-
-    "compile": [ "../windows-build/gen/Microsoft.PowerShell.Commands.Management/*.cs" ]
+    }
 }
