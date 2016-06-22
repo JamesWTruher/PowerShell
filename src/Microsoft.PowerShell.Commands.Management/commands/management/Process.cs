@@ -1378,11 +1378,13 @@ namespace Microsoft.PowerShell.Commands
                         }
                     }
 
+#if !LINUX
                     //if the process is svchost stop all the dependent services before killing process
                     if (string.Equals(SafeGetProcessName(process), "SVCHOST", StringComparison.CurrentCultureIgnoreCase))
                     {
                         StopDependentService(process);
                     }
+#endif
 
                     // kill the process
                     if (!process.HasExited)
