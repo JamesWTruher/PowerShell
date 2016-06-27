@@ -30,8 +30,6 @@ namespace Microsoft.PowerShell.Commands
 	internal class PSHostTraceListener 
         : System.Diagnostics.TraceListener
 	{
-        #region TraceListener constructors and disposer
-
         /// <summary>
         /// Default constructor used if no.
         /// </summary>
@@ -49,56 +47,6 @@ namespace Microsoft.PowerShell.Commands
 
             this.ui = cmdlet.Host.UI as InternalHostUserInterface;
 		}
-
-        ~PSHostTraceListener()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// Closes the TraceListenerDialog so that it no longer
-        /// receives trace output.
-        /// </summary>
-        /// 
-        /// <param name="disposing">
-        /// true if the TraceListener is being disposed, false
-        /// otherwise.
-        /// </param>
-        /// 
-        [SecurityPermission(SecurityAction.LinkDemand)]
-        protected override void Dispose(bool disposing)
-        {
-#if CORECLR
-            base.Dispose(disposing);
-#else
-            try
-            {
-                if (disposing) 
-                {
-                    this.Close();
-                }
-            }
-            finally
-            {
-                base.Dispose(disposing);
-            }
-#endif
-        }                
-
-#if !CORECLR
-        /// <summary>
-        /// Closes the dialog and then calls the base class Close
-        /// </summary>
-        [SecurityPermission(SecurityAction.LinkDemand)]
-        public override void Close()
-        {
-            // Call the base class close
-
-            base.Close();
-        }
-#endif
-
-        #endregion TraceListener constructors and disposer
 
         /// <summary>
         /// Sends the given output string to the host for processing
