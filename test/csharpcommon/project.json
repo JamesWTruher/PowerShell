@@ -1,0 +1,57 @@
+{
+    "name": "powershell-test-common",
+    "version": "1.0.0-*",
+    "description": "PowerShell Test Helpers",
+    "authors": [ "jimtru" ],
+
+    "buildOptions": {
+        "keyFile": "../../src/signing/visualstudiopublic.snk",
+        "delaySign": true,
+        "publicSign": false
+    },
+
+    "dependencies": {
+        "System.Management.Automation": "*",
+        "xunit": "2.1.0"
+    },
+
+    "frameworks": {
+        "netcoreapp1.0": {
+            "imports": [ "dnxcore50", "portable-net45+win8" ],
+            "buildOptions": {
+                "define": [ "CORECLR" ]
+            },
+            "dependencies": {
+                "Microsoft.NETCore.App": "1.0.0-rc2-3002668",
+                "System.Collections.NonGeneric": "4.0.0-beta-*",
+                "System.Collections.Specialized": "4.0.1-rc2-24103",
+                "Xunit.Runner.Utility": "*"
+            }
+        },
+
+        "netstandard1.5": {
+            "imports": [ "dnxcore50", "portable-net45+win8" ],
+            "buildOptions": {
+                "define": [ "CORECLR" ]
+            },
+            "dependencies": {
+                "Microsoft.NETCore.App": "1.0.0-rc2-3002668",
+                "System.Collections.NonGeneric": "4.0.0-beta-*",
+                "System.Collections.Specialized": "4.0.1-rc2-24103",
+                "Xunit.Runner.Utility": "*"
+            }
+        },
+
+    },
+
+    "runtimes": {
+        "ubuntu.14.04-x64": { },
+        "debian.8-x64": { },
+        "centos.7-x64": { },
+        "win7-x64": { },
+        "win81-x64": { },
+        "win10-x64": { },
+        "osx.10.10-x64": { },
+        "osx.10.11-x64": { }
+    }
+}

@@ -5,7 +5,7 @@ using System.Management.Automation.Language;
 namespace PSTests
 {
     [Collection("AssemblyLoadContext")]
-    public static class PSEnumerableBinderTests
+    public static class PSFactTests
     {
         [CiFact]
         public static void TestCiFactFound()
@@ -19,6 +19,21 @@ namespace PSTests
         }
         [ScenarioFact]
         public static void TestScenarioFactFound()
+        {
+            Assert.True(true);
+        }
+        [CiFact(Pending="miss this ci")]
+        public static void TestCiFactPending()
+        {
+            Assert.True(true);
+        }
+        [FeatureFact(Pending="miss this feature")]
+        public static void TestFeatureFactPending()
+        {
+            Assert.True(true);
+        }
+        [ScenarioFact(Pending="miss this scenario")]
+        public static void TestScenarioFactPending()
         {
             Assert.True(true);
         }
