@@ -32,6 +32,7 @@ function Start-PSBuild {
         [string]$Output,
         [switch]$ResGen,
         [switch]$TypeGen,
+        [switch]$Clean,
 
         [Parameter(ParameterSetName='CoreCLR')]
         [switch]$Publish,
@@ -48,11 +49,11 @@ function Start-PSBuild {
         [Parameter(ParameterSetName='CoreCLR')]
         [string]$Runtime,
 
-        [Parameter(ParameterSetName='FullCLR')]
+        [Parameter(ParameterSetName='FullCLR', Mandatory=$true)]
         [switch]$FullCLR,
 
         [Parameter(ParameterSetName='FullCLR')]
-        [switch]$ResolveXaml,
+        [switch]$XamlGen,
 
         [Parameter(ParameterSetName='FullCLR')]
         [string]$cmakeGenerator = "Visual Studio 14 2015 Win64",
@@ -62,6 +63,12 @@ function Start-PSBuild {
                      "Release")]
         [string]$msbuildConfiguration = "Release"
     )
+
+    if ($Clean)
+    {
+        log "Cleaning your working directory. You can also do it with 'git clean -fdX'"
+        git clean -fdX
+    }
 
     # save Git description to file for PowerShell to include in PSVersionTable
     git --git-dir="$PSScriptRoot/.git" describe --dirty --abbrev=60 > "$psscriptroot/powershell.version"
@@ -87,14 +94,7 @@ function Start-PSBuild {
         # cmake is needed to build powershell.exe
         $precheck = $precheck -and (precheck 'cmake' 'cmake not found. You can install it from https://chocolatey.org/packages/cmake.portable')
 
-        # msbuild is needed to build powershell.exe
-        # msbuild is part of .NET Framework, we can try to get it from well-known location.
-        if (-not $NoPath) {
-            Use-MSBuild
-        }
-
-        $precheck = $precheck -and (precheck 'msbuild' 'msbuild not found. Install Visual Studio 2015.')
-
+        Use-MSBuild
         #mc.exe is Message Compiler for native resources
         $mcexe = Get-ChildItem "${env:ProgramFiles(x86)}\Microsoft SDKs\Windows\" -Recurse -Filter 'mc.exe' | ? {$_.FullName -match 'x64'} | select -First 1 | % {$_.FullName}
         if (-not $mcexe) {
@@ -156,9 +156,10 @@ function Start-PSBuild {
 
     # handle xaml files
     # Heuristic to resolve xaml on the fresh machine
-    if ($FullCLR -and ($ResolveXaml -or -not (Test-Path "$PSScriptRoot/src/Microsoft.PowerShell.Activities/gen/*.g.resources")))
+    if ($FullCLR -and ($XamlGen -or -not (Test-Path "$PSScriptRoot/src/Microsoft.PowerShell.Activities/gen/*.g.resources")))
     {
-        Resolve-Xaml -MSBuildConfiguration $msbuildConfiguration
+        log "Run XamlGen (generating .g.cs and .resources for .xaml files)"
+        Start-XamlGen -MSBuildConfiguration $msbuildConfiguration
     }
 
     # Build native components
@@ -195,17 +196,17 @@ function Start-PSBuild {
             @("nativemsh/pwrshplugin") | % {
                 $nativeResourcesFolder = $_
                 Get-ChildItem $nativeResourcesFolder -Filter "*.mc" | % {
-                    & $mcexe -c -U $_.FullName -h $nativeResourcesFolder -r $nativeResourcesFolder
+                #    & $mcexe -c -U $_.FullName -h $nativeResourcesFolder -r $nativeResourcesFolder
                 }
             }
             
             if ($cmakeGenerator) {
-                cmake -G $cmakeGenerator .
+                Start-NativeExecution { cmake -G $cmakeGenerator . }
             } else {
-                cmake .
+                Start-NativeExecution { cmake . }
             }
 
-            Start-NativeExecution { msbuild ALL_BUILD.vcxproj /p:Configuration=$msbuildConfiguration }
+            Start-NativeExecution { msbuild powershell.vcxproj /p:Configuration=$msbuildConfiguration }
 
         } finally {
             Pop-Location
@@ -356,7 +357,7 @@ function Start-PSPester {
         [string]$Directory = "$PSScriptRoot/test/powershell"
     )
 
-    & (Get-PSOutput) -noprofile -c "Invoke-Pester $Flags $Directory/$Tests"
+    & (Get-PSOutput) -noprofile -c "Import-Module '$PSScriptRoot/src/Modules/Pester'; Invoke-Pester $Flags $Directory/$Tests"
     if ($LASTEXITCODE -ne 0) {
         throw "$LASTEXITCODE Pester tests failed"
     }
@@ -413,7 +414,7 @@ function Start-PSBootstrap {
         [string]$Version = "latest"
     )
 
-    Write-Host "Installing Open PowerShell build dependencies"
+    log "Installing Open PowerShell build dependencies"
 
     Push-Location $PSScriptRoot/tools
 
@@ -503,7 +504,7 @@ Built upon .NET Core, it is also a C# REPL.
     Write-Verbose "Packaging $Source"
 
     if ($IsWindows) {
-        $msiPackagePath = New-MSIPackage -ProductSourcePath $Source -ProductVersion $Version -Verbose
+        $msiPackagePath = New-MSIPackage -ProductSourcePath $Source -ProductVersion $Version -AssetsPath "$PSScriptRoot\Assets" -Verbose
         $appxPackagePath = New-AppxPackage -PackageVersion $Version -SourcePath $Source -AssetsPath "$PSScriptRoot\Assets" -Verbose
 
         $packages = @($msiPackagePath, $appxPackagePath)
@@ -745,7 +746,7 @@ function Copy-MappedFiles {
         $cl = git --git-dir="$PSScriptRoot/.git" tag | % {if ($_ -match 'SD.(\d+)$') {[int]$Matches[1]} } | Sort-Object -Descending | Select-Object -First 1
         if ($cl)
         {
-            Write-Host -ForegroundColor Green "Current base-line CL is SD:$cl (based on tags)"
+            log "Current base-line CL is SD:$cl (based on tags)"
         }
         else 
         {
@@ -762,13 +763,12 @@ function Copy-MappedFiles {
 
             if (git log --grep="SD:$cl" HEAD^..HEAD)
             {
-                Write-Host -ForegroundColor Green "$pslMonadRoot HEAD matches [SD:$cl]"
+                log Green "$pslMonadRoot HEAD matches [SD:$cl]"
             }
             else 
             {
-                Write-Host -ForegroundColor Yellow "Try to checkout this commit in $pslMonadRoot :" 
-                git log --grep="SD:$cl"
-
+                Write-Warning "Try to checkout this commit in $pslMonadRoot :" 
+                git log --grep="SD:$cl" | Write-Warning
                 MaybeTerminatingWarning "$pslMonadRoot HEAD doesn't match [SD:$cl]"
             }
         }
@@ -879,7 +879,7 @@ function Send-GitDiffToSd {
     $m = Get-Mappings -KeepRelativePaths -Root $AdminRoot
     $affectedFiles = git diff --name-only $diffArg1 $diffArg2
     $affectedFiles | % {
-        Write-Host -Foreground Green "Changes in file $_"
+        log "Changes in file $_"
     }
 
     $rev = Get-InvertedOrderedMap $m
@@ -894,19 +894,19 @@ function Send-GitDiffToSd {
 
             $diff = git diff $diffArg1 $diffArg2 -- $file
             if ($diff) {
-                Write-Host -Foreground Green "Apply patch to $sdFilePath"
+                log "Apply patch to $sdFilePath"
                 Set-Content -Value $diff -Path $env:TEMP\diff -Encoding Ascii
                 if ($WhatIf) {
-                    Write-Host -Foreground Green "Patch content"
+                    log "Patch content"
                     Get-Content $env:TEMP\diff
                 } else {
                     & $patchPath --binary -p1 $sdFilePath $env:TEMP\diff
                 }
             } else {
-                Write-Host -Foreground Green "No changes in $file"
+                log "No changes in $file"
             }
         } else {
-            Write-Host -Foreground Green "Ignore changes in $file, because there is no mapping for it"
+            log "Ignore changes in $file, because there is no mapping for it"
         }
     }
 }
@@ -989,7 +989,7 @@ function Find-Dotnet() {
     }
 }
 
-function Resolve-Xaml
+function Start-XamlGen
 {
     [CmdletBinding()]
     param(
@@ -1000,11 +1000,6 @@ function Resolve-Xaml
     )
 
     Use-MSBuild
-    $precheck = precheck 'msbuild' 'msbuild not found. Install Visual Studio 2015.'
-    if (-not $precheck) {
-        return
-    }
-
     Get-ChildItem -Path "$PSScriptRoot/src" -Directory | % {
         
         $XamlDir = Join-Path -Path $_.FullName -ChildPath Xamls
@@ -1015,19 +1010,22 @@ function Resolve-Xaml
             Remove-Item -Path $OutputDir -Recurse -Force -ErrorAction SilentlyContinue
             mkdir -Path $OutputDir -Force > $null
 
-            # For GraphicalHost we will get failures, but it's ok: we only need to copy *.g.cs files in the dotnet cli project.
-            # For over projects we leave the check just in case.
-            # We can revisit it on case-by-case basis.
-            $IgnoreFailure = [bool]($XamlDir -match 'GraphicalHost')
-
-            $SourceDir = ConvertFrom-Xaml -Configuration $MSBuildConfiguration -OutputDir $OutputDir -XamlDir $XamlDir -IgnoreMsbuildFailure:$IgnoreFailure
+            # we will get failures, but it's ok: we only need to copy *.g.cs files in the dotnet cli project.
+            $SourceDir = ConvertFrom-Xaml -Configuration $MSBuildConfiguration -OutputDir $OutputDir -XamlDir $XamlDir -IgnoreMsbuildFailure:$true
             $DestinationDir = Join-Path -Path $_.FullName -ChildPath gen
             
-            if (-not (Test-Path $DestinationDir -PathType Container))
+            New-Item -ItemType Directory $DestinationDir -ErrorAction SilentlyContinue > $null
+            $filesToCopy = Get-Item "$SourceDir\*.cs", "$SourceDir\*.g.resources"
+            if (-not $filesToCopy)
             {
-                mkdir -Path $DestinationDir -Force > $null
+                throw "No .cs or .g.resources files are generated for $XamlDir, something went wrong. Run 'Start-XamlGen -Verbose' for details."
             }
-            Copy-Item -Path $SourceDir\*.cs, $SourceDir\*.g.resources -Destination $DestinationDir -Force
+
+            $filesToCopy | % {
+                $sourcePath = $_.FullName
+                Write-Verbose "Copy generated xaml artifact: $sourcePath -> $DestinationDir"
+                Copy-Item -Path $sourcePath -Destination $DestinationDir
+            }
         }
     }
 }
@@ -1049,13 +1047,13 @@ $Script:XamlProj = @"
 
     <ItemGroup>
 {2}
-        <Reference Include="${env:SystemRoot}\Microsoft.Net\Framework\v4.0.30319\WPF\WindowsBase.dll">
+        <Reference Include="WindowsBase.dll">
             <Private>False</Private>
         </Reference>
-        <Reference Include="${env:SystemRoot}\Microsoft.Net\Framework\v4.0.30319\WPF\PresentationCore.dll">
+        <Reference Include="PresentationCore.dll">
             <Private>False</Private>
         </Reference>
-        <Reference Include="${env:SystemRoot}\Microsoft.Net\Framework\v4.0.30319\WPF\PresentationFramework.dll">
+        <Reference Include="PresentationFramework.dll">
             <Private>False</Private>
         </Reference>
     </ItemGroup>
@@ -1082,7 +1080,7 @@ function script:ConvertFrom-Xaml {
         [switch] $IgnoreMsbuildFailure
     )
 
-    Write-Verbose "ConvertFrom-Xaml for $XamlDir"
+    log "ConvertFrom-Xaml for $XamlDir"
 
     $Pages = ""
     Get-ChildItem -Path "$XamlDir\*.xaml" | % {
@@ -1094,14 +1092,14 @@ function script:ConvertFrom-Xaml {
     $XamlProjPath = Join-Path -Path $OutputDir -ChildPath xaml.proj
     Set-Content -Path $XamlProjPath -Value $XamlProjContent -Encoding Ascii -NoNewline -Force
 
-    msbuild $XamlProjPath > $null
+    msbuild $XamlProjPath | Write-Verbose
 
     if ($LASTEXITCODE -ne 0)
     {
         $message = "When processing $XamlDir 'msbuild $XamlProjPath > `$null' failed with exit code $LASTEXITCODE"
         if ($IgnoreMsbuildFailure)
         {
-            Write-Warning $message
+            Write-Verbose $message
         }
         else
         {
@@ -1114,10 +1112,23 @@ function script:ConvertFrom-Xaml {
 
 
 function script:Use-MSBuild {
-    if (-not (Get-Command -Name msbuild -ErrorAction Ignore)) {
-        Write-Verbose "Appending probable Visual C++ tools path"
-        $env:path += ";${env:SystemRoot}\Microsoft.Net\Framework\v4.0.30319"
+    # TODO: we probably should require a particular version of msbuild, if we are taking this dependency
+    # msbuild v14 and msbuild v4 behaviors are different for XAML generation
+    $frameworkMsBuildLocation = "${env:SystemRoot}\Microsoft.Net\Framework\v4.0.30319\msbuild"
+
+    $msbuild = get-command msbuild -ErrorAction SilentlyContinue
+    if ($msbuild)
+    {
+        # all good, nothing to do
+        return
     }
+
+    if (-not (Test-Path $frameworkMsBuildLocation))
+    {
+        throw "msbuild not found in '$frameworkMsBuildLocation'. Install Visual Studio 2015."
+    }
+
+    Set-Alias msbuild $frameworkMsBuildLocation -Scope Script
 }
 
 
@@ -1330,6 +1341,36 @@ internal class {0} {{
     return $resultCode -replace "`r`n?|`n","`r`n"
 }
 
+# Builds coming out of this project can have version number as 'a.b.c' OR 'a.b.c-d-f'
+# This function converts the above version into major.minor[.build[.revision]] format
+function Get-PackageVersionAsMajorMinorBuildRevision
+{
+    [CmdletBinding()]
+    param (
+        # Version of the Package
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $Version
+        )
+
+    Write-Verbose "Extract the version in the form of major.minor[.build[.revision]] for $Version"
+    $packageVersionTokens = $Version.Split('-')
+    $packageVersion = ([regex]::matches($Version, "\d+(\.\d+)+"))[0].value
+
+    if (1 -eq $packageVersionTokens.Count)
+    {           
+        # In case the input is of the form a.b.c, add a '0' at the end for revision field
+       $packageVersion = $packageVersion + '.0'
+    }
+    elseif (1 -lt $packageVersionTokens.Count)
+    {
+        # We have all the four fields
+       $packageVersion = $packageVersion + '.' + $packageVersionTokens[1]
+    }
+
+    return $packageVersion
+}
+
 function New-MSIPackage
 {
     [CmdletBinding()]
@@ -1337,7 +1378,7 @@ function New-MSIPackage
     
         # Name of the Product
         [ValidateNotNullOrEmpty()]
-        [string] $ProductName = 'OpenPowerShell', 
+        [string] $ProductName = 'PowerShell', 
 
         # Version of the Product
         [Parameter(Mandatory = $true)]
@@ -1355,7 +1396,12 @@ function New-MSIPackage
 
         # File describing the MSI Package creation semantics
         [ValidateNotNullOrEmpty()]
-        [string] $ProductWxsPath = (Join-Path $pwd '\assets\Product.wxs')
+        [string] $ProductWxsPath = (Join-Path $pwd '\assets\Product.wxs'),
+
+        # Path to Assets folder containing artifacts such as icons, images
+        [Parameter(Mandatory = $true)]
+        [ValidateNotNullOrEmpty()]
+        [string] $AssetsPath  
 
     )    
 
@@ -1371,9 +1417,16 @@ function New-MSIPackage
     $wixHeatExePath = Join-Path $wixToolsetBinPath "Heat.exe"
     $wixCandleExePath = Join-Path $wixToolsetBinPath "Candle.exe"
     $wixLightExePath = Join-Path $wixToolsetBinPath "Light.exe"
+
+    $ProductVersion = Get-PackageVersionAsMajorMinorBuildRevision -Version $ProductVersion -Verbose
     
-    # Wix tooling does not like hyphen in the foldername
-    $ProductVersion = $ProductVersion.Replace('-', '_')
+    $assetsInSourcePath = "$ProductSourcePath" + '\assets'
+    New-Item $assetsInSourcePath -type directory -Force | Write-Verbose
+
+    $assetsInSourcePath = Join-Path $ProductSourcePath 'assets'
+
+    Write-Verbose "Place dependencies such as icons to $assetsInSourcePath" 
+    Copy-Item "$AssetsPath\*.ico" $assetsInSourcePath -Force
 
     $productVersionWithName = $ProductName + "_" + $ProductVersion
     Write-Verbose "Create MSI for Product $productVersionWithName"
@@ -1409,7 +1462,7 @@ function New-AppxPackage
     
         # Name of the Package
         [ValidateNotNullOrEmpty()]
-        [string] $PackageName = 'OpenPowerShell', 
+        [string] $PackageName = 'PowerShell', 
 
         # Version of the Package
         [Parameter(Mandatory = $true)]
@@ -1426,13 +1479,8 @@ function New-AppxPackage
         [ValidateNotNullOrEmpty()]
         [string] $AssetsPath        
     )
-    
-    Write-Verbose "Extract the version in the form of a.b.c.d for $PackageVersion"
-    $PackageVersionTokens = $PackageVersion.Split('-')
-    $PackageVersion = ([regex]::matches($PackageVersion, "\d+(\.\d+)+"))[0].value
-
-    # Need to add the last version field for makeappx
-    $PackageVersion = $PackageVersion + '.' + $PackageVersionTokens[1]
+        
+    $PackageVersion = Get-PackageVersionAsMajorMinorBuildRevision -Version $PackageVersion -Verbose
     Write-Verbose "Package Version is $PackageVersion"
 
     $win10sdkBinPath = "${env:ProgramFiles(x86)}\Windows Kits\10\bin\x64"
@@ -1460,9 +1508,9 @@ function New-AppxPackage
 
     $appxManifest = @"
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities">
-  <Identity Name="Microsoft.OpenPowerShell" ProcessorArchitecture="x64" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="#VERSION#" />
+  <Identity Name="Microsoft.PowerShell" ProcessorArchitecture="x64" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" Version="#VERSION#" />
   <Properties>
-    <DisplayName>OpenPowerShell</DisplayName>
+    <DisplayName>PowerShell</DisplayName>
     <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
     <Logo>#LOGO#</Logo>
   </Properties>
@@ -1477,8 +1525,8 @@ function New-AppxPackage
     <rescap:Capability Name="runFullTrust" />
   </Capabilities>
   <Applications>
-    <Application Id="OpenPowerShell" Executable="powershell.exe" EntryPoint="Windows.FullTrustApplication">
-      <uap:VisualElements DisplayName="OpenPowerShell" Description="OpenPowerShell Package" BackgroundColor="transparent" Square150x150Logo="#SQUARE150x150LOGO#" Square44x44Logo="#SQUARE44x44LOGO#">
+    <Application Id="PowerShell" Executable="powershell.exe" EntryPoint="Windows.FullTrustApplication">
+      <uap:VisualElements DisplayName="PowerShell" Description="PowerShell for every system" BackgroundColor="transparent" Square150x150Logo="#SQUARE150x150LOGO#" Square44x44Logo="#SQUARE44x44LOGO#">
       </uap:VisualElements>
     </Application>
   </Applications>
