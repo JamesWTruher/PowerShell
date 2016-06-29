@@ -5848,58 +5848,6 @@ if($paths) {
             if (psSnapInInfo != null && psSnapInInfo.Name.Equals(InitialSessionState.CoreSnapin, StringComparison.OrdinalIgnoreCase))
             {
                 InitializeCoreCmdletsAndProviders(psSnapInInfo, out cmdlets, out providers, helpFile);
-
-#if DEBUG
-                // Make sure the pre-built cmdlet and provider tables match what reflection finds.  This will help
-                // avoid issues where you add a cmdlet but forget to update the table in InitializeCoreCmdletsAndProviders.
-
-                Dictionary<string, SessionStateCmdletEntry> cmdletsCheck = null;
-                Dictionary<string, SessionStateProviderEntry> providersCheck = null;
-                Dictionary<string, List<SessionStateAliasEntry>> aliasesCheck = null;
-                Type unused1 = null;
-                Type unused2 = null;
-                AnalyzeModuleAssemblyWithReflection(assembly, name, psSnapInInfo, moduleInfo, isModuleLoad,
-                    ref cmdletsCheck, ref aliasesCheck, ref providersCheck, helpFile, ref unused1, ref unused2);
-
-                Diagnostics.Assert(aliasesCheck == null, "InitializeCoreCmdletsAndProviders assumes no aliases are defined in System.Management.Automation.dll");
-                Diagnostics.Assert(providersCheck.Keys.Count == providers.Keys.Count, "new Provider added to System.Management.Automation.dll - update InitializeCoreCmdletsAndProviders");
-                foreach (var pair in providersCheck)
-                {
-                    SessionStateProviderEntry other;
-                    if (providers.TryGetValue(pair.Key, out other))
-                    {
-                        Diagnostics.Assert((object)pair.Value.HelpFileName == (object)other.HelpFileName, "Pre-generated Provider help file incorrect");
-                        Diagnostics.Assert(pair.Value.ImplementingType == other.ImplementingType, "Pre-generated Provider implementing type incorrect");
-                        Diagnostics.Assert(string.Equals(pair.Value.Name, other.Name, StringComparison.Ordinal), "Pre-generated Provider name incorrect");
-                        Diagnostics.Assert(pair.Value.PSSnapIn == other.PSSnapIn, "Pre-generated Provider snappin type incorrect");
-                        Diagnostics.Assert(pair.Value.Module == other.Module, "Pre-generated Provider module incorrect");
-                        Diagnostics.Assert(pair.Value.Visibility == other.Visibility, "Pre-generated Provider visibility incorrect");
-                    }
-                    else
-                    {
-                        Diagnostics.Assert(false, "Missing provider: " + pair.Key);
-                    }
-                }
-                Diagnostics.Assert(cmdletsCheck.Keys.Count == cmdlets.Keys.Count, "new Cmdlet added to System.Management.Automation.dll - update InitializeCoreCmdletsAndProviders");
-
-                foreach (var pair in cmdletsCheck)
-                {
-                    SessionStateCmdletEntry other;
-                    if (cmdlets.TryGetValue(pair.Key, out other))
-                    {
-                        Diagnostics.Assert((object)pair.Value.HelpFileName == (object)other.HelpFileName, "Pre-generated Provider help file incorrect");
-                        Diagnostics.Assert(pair.Value.ImplementingType == other.ImplementingType, "Pre-generated Provider implementing type incorrect");
-                        Diagnostics.Assert(string.Equals(pair.Value.Name, other.Name, StringComparison.Ordinal), "Pre-generated Provider name incorrect");
-                        Diagnostics.Assert(pair.Value.PSSnapIn == other.PSSnapIn, "Pre-generated Provider snappin type incorrect");
-                        Diagnostics.Assert(pair.Value.Module == other.Module, "Pre-generated Provider module incorrect");
-                        Diagnostics.Assert(pair.Value.Visibility == other.Visibility, "Pre-generated Provider visibility incorrect");
-                    }
-                    else
-                    {
-                        Diagnostics.Assert(false, "Pre-generated Cmdlet missing: " + pair.Key);
-                    }
-                }
-#endif
             }
             else
             {
