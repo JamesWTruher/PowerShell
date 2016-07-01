@@ -7,9 +7,9 @@ Function New-ApacheVHost {
         [parameter (Mandatory = $true)][string]$ServerName,
         [string]$VHostsDirectory,
         [parameter (Mandatory = $true)][string]$DocumentRoot,
-        [string]$VirtualHostIPAddress,
+         [parameter (Mandatory = $true)][string]$VirtualHostIPAddress,
         [string[]]$ServerAliases,
-        [string]$VirtualHostPort,
+         [parameter (Mandatory = $true)][string]$VirtualHostPort,
         [string]$ServerAdmin,
         [string]$CustomLogPath,
         [string]$ErrorLogPath
@@ -91,7 +91,7 @@ Function Get-ApacheVHosts{
         exit -1
     }
 
-    $cmd  = $cmd += " -S"
+    $cmd  = $cmd += " -t -D DUMP_VHOSTS"
     $Vhosts = @()
     $res = Invoke-expression $cmd
     ForEach ($line in $res){         
@@ -111,4 +111,63 @@ Function Get-ApacheVHosts{
 
 }
 
+Function Restart-ApacheHTTPServer{
+  [CmdletBinding()]
+  Param(
+   [boolean]$Graceful
+   )
+  
+    if ($Graceful -eq $null){$Graceful = $fase}
+	
+    $cmd = $null
+    if (Test-Path "/usr/sbin/apache2ctl"){
+        $cmd = "/usr/sbin/apache2ctl"
+    }elseif(Test-Path "/usr/sbin/httpd"){
+        $cmd = "/usr/sbin/httpd"
+    }
+	
+	if ($cmd -eq $null){
+        Write-Error "Unable to find httpd/apache2ctl command"
+        exit -1
+    }
+	
+	if ($Graceful){
+		$cmd = $cmd += " -k graceful"
+	}else{
+		$cmd = $cmd += " -k restart"
+	}
+	
+	Invoke-Expression $Cmd
+}
 
+Function Get-ApacheModules{
+    $cmd = $null
+    if (Test-Path "/usr/sbin/apache2ctl"){
+        $cmd = "/usr/sbin/apache2ctl"
+    }elseif(Test-Path "/usr/sbin/httpd"){
+        $cmd = "/usr/sbin/httpd"
+    }
+	
+	if ($cmd -eq $null){
+        Write-Error "Unable to find httpd/apache2ctl command"
+        exit -1
+    }
+	
+	$cmd = $cmd += " -M |grep -v Loaded"
+	
+	$ApacheModules = @()
+	function New-ModuleObj {
+        New-Object PSObject -Property @{}
+    }
+
+
+	$Results = Invoke-Expression $cmd
+	Foreach ($mod in $Results){
+	  $modObj = New-ModuleObj
+	  $modObj | Add-Member -type NoteProperty -name "Module" -value $mod.trim()
+	  $ApacheModules += $modObj
+	} 
+
+	Return $ApacheModules
+	
+}
