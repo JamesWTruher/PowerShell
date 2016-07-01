@@ -85,5 +85,6 @@ char* FollowSymLink(const char* fileName)
         return NULL;
     }
 
-    return strndup(realPath, strlen(actualpath + 1));
-}
+   return strndup(realPath, strlen(realPath) + 1 );
+   
+   }
