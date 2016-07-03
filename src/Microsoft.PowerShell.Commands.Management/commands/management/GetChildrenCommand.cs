@@ -367,7 +367,7 @@ namespace Microsoft.PowerShell.Commands
                 paths = new string[] { String.Empty };
             }
 
-            foreach (string path in paths)
+            foreach (string path in paths)  
             {
                 switch (ParameterSetName)
                 {
@@ -388,8 +388,8 @@ namespace Microsoft.PowerShell.Commands
                                 // Get the children using the static namespace method.
                                 // The children should be written directly to the pipeline using
                                 // the context.WriteObject method.
+                                    InvokeProvider.ChildItem.Get(path, Recurse, Depth, currentContext);
 
-                                InvokeProvider.ChildItem.Get(path, Recurse, Depth, currentContext);
                             }
                         }
                         catch (PSNotSupportedException notSupported)

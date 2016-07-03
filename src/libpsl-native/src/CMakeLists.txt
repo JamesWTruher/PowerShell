@@ -9,6 +9,7 @@ add_library(psl-native SHARED
   setdate.cpp
   createhardlink.cpp
   createsymlink.cpp
+  resolvesymlink.cpp
   followsymlink.cpp)
 
 target_include_directories(psl-native PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

@@ -717,6 +717,11 @@ namespace System.Management.Automation
             return Native.FollowSymLink(path);
         }
 
+        public static string ResolveSymLink(string path)
+        {
+            return Native.ResolveSymLink(path);
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal class SetDateInfoInternal
         {
@@ -785,6 +790,10 @@ namespace System.Management.Automation
             [DllImport(psLib, CharSet = CharSet.Ansi, SetLastError = true)]
             [return: MarshalAs(UnmanagedType.LPStr)]
             internal static extern string FollowSymLink([MarshalAs(UnmanagedType.LPStr)]string filePath);
+
+            [DllImport(psLib, CharSet = CharSet.Ansi, SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.LPStr)]
+            internal static extern string ResolveSymLink([MarshalAs(UnmanagedType.LPStr)]string filePath);
 
         }
     }

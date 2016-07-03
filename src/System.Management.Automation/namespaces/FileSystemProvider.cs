@@ -7784,7 +7784,7 @@ namespace Microsoft.PowerShell.Commands
         private bool wait;
 
         /// <summary>
-        /// When the –Raw switch is present, we don’t do any breaks on newlines,
+        /// When the ï¿½Raw switch is present, we donï¿½t do any breaks on newlines,
         /// and only emit one object to the pipeline: all of the content.
         /// </summary>
         [Parameter]
@@ -8104,7 +8104,7 @@ namespace Microsoft.PowerShell.Commands
             var links = new List<string>();
             if (!Platform.IsWindows)
             {
-                string link = Platform.NonWindowsInternalGetTarget(filePath);
+                string link = LinuxPlatform.ResolveSymLink(filePath);
                 if (!String.IsNullOrEmpty(link))
                 {
                     links.Add(link);
