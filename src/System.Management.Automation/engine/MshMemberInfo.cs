@@ -1817,7 +1817,7 @@ namespace System.Management.Automation
         {
             get
             {
-                return this.SetterScript != null;
+                return this.setterScript != null || this.setterScriptText != null;
             }
         }
 
@@ -1828,7 +1828,7 @@ namespace System.Management.Automation
         {
             get
             {
-                return this.GetterScript != null;
+                return this.getterScript != null || this.getterScriptText != null;
             }
         }
 
