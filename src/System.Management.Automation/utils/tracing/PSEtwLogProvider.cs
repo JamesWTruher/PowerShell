@@ -15,11 +15,13 @@ namespace System.Management.Automation.Tracing
     internal class PSEtwLogProvider : LogProvider
     {
         private static EventProvider etwProvider;
+/*
 #if _CMF
         private static readonly string PowerShellEventProviderGuid = "5704bd49-40f6-4d92-a82a-336532248694";
 #else
+*/
         private static readonly string PowerShellEventProviderGuid = "A0C1853B-5C40-4b15-8766-3CF1C58F985A";
-#endif
+//#endif
         private static EventDescriptor _xferEventDescriptor = new EventDescriptor(0x1f05, 0x1, 0x11, 0x5, 0x14, 0x0, (long)0x4000000000000000);
 
         static class Strings
