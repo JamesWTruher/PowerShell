@@ -1,0 +1,39 @@
+<Configuration>
+    <ViewDefinitions>
+        <View>
+            <Name>System.CimModuleDiscoveryType</Name>
+            <ViewSelectedBy>
+                <TypeName>System.CimModuleDiscoveryType</TypeName>
+            </ViewSelectedBy>
+             <ListControl>
+                <ListEntries>
+                    <ListEntry>
+                        <ListItems>
+                            <ListItem>
+                                <PropertyName>ErrorText</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>Line</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>Column</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>ErrorNumber</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>LineSource</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <Label>ScriptBlock</Label>
+                                <ScriptBlock>
+                                  return "ScriptBlock";
+                                </ScriptBlock>
+                            </ListItem>
+                        </ListItems>
+                    </ListEntry>
+                </ListEntries>
+            </ListControl>
+        </View>
+    </ViewDefinitions>
+</Configuration>

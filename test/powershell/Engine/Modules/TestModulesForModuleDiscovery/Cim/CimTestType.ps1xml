@@ -1,0 +1,38 @@
+<Types>
+    <Type>
+        <Name>System.CimModuleDiscoveryType</Name>
+        <Members>
+            <AliasProperty>
+                <Name>Foo</Name>
+                <ReferencedMemberName>Length</ReferencedMemberName>
+            </AliasProperty>
+
+            <ScriptProperty>
+               <Name>ScriptBlock</Name>
+               <GetScriptBlock>
+                return "ScriptBlock";
+               </GetScriptBlock>
+            </ScriptProperty>
+        </Members>
+    </Type>
+
+
+    <Type>
+        <Name>Microsoft.Management.Infrastructure.CimInstance#root/cimv2/Win32_ComputerSystem</Name>
+        <Members>
+          <AliasProperty>
+            <Name>Foo</Name>
+            <ReferencedMemberName>Name</ReferencedMemberName>
+          </AliasProperty>
+
+            <ScriptProperty>
+               <Name>ScriptBlock</Name>
+               <GetScriptBlock>
+                return "ScriptBlock";
+               </GetScriptBlock>
+            </ScriptProperty>
+        </Members>
+    </Type>
+
+
+</Types>
