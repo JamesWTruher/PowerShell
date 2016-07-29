@@ -1,18 +1,5 @@
 # Known Issues
 
-## SecureString
-
-The `SecureString` class is *not* the well-known C# `SecureString`, as the
-library is not available in .NET Core. However, PowerShell continues to use the
-type for two main reasons: FullCLR compatibility, and as a specially-treated
-type (that is, behavior is dependent on the type being `SecureString`). Instead,
-the `SecureString` is Mono's completely not secure whatsoever, but open-source
-and "compatible" stub that acts just like a plaintext `StringBuilder`. **It has
-no encryption.**
-
-Additionally `ReadLineSafe` is not implemented, meaning `Get-Credential` fails
-with `PlatformNotSupportedException`.
-
 ## Files excluded from the build
 
 #### Microsoft.PowerShell.Commands.Management
@@ -103,6 +90,25 @@ following cmdlets that exist in the FullCLR version:
 - Send-MailMessage
 - Show-Command
 - Update-List
+
+### ExecutionPolicy unavailable on non-Windows platform
+
+ExecutionPolicy is not implemented on non-Windows platforms and the following related CmdLets will return the error below.
+ 
+- Get-ExecutionPolicy
+- Set-ExecutionPolicy
+
+```
+Set-ExecutionPolicy : Operation is not supported on this platform.
+At line:1 char:1
++ Set-ExecutionPolicy AllSigned
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [Set-ExecutionPolicy], Platfor
+   mNotSupportedException
+    + FullyQualifiedErrorId : System.PlatformNotSupportedException,Microsoft.P
+   owerShell.Commands.SetExecutionPolicyCommand
+
+```
 
 ## File paths with literal backward slashes
 

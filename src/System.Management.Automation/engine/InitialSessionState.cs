@@ -5122,8 +5122,8 @@ end
                 ScopedItemOptions.ReadOnly | ScopedItemOptions.AllScope),
 
             new SessionStateVariableEntry(
-                SpecialVariables.IsCore,
-                Platform.IsCore,
+                SpecialVariables.IsCoreCLR,
+                Platform.IsCoreCLR,
                 String.Empty,
                 ScopedItemOptions.ReadOnly | ScopedItemOptions.AllScope),
             #endregion
@@ -5286,8 +5286,8 @@ end
                         "Stop-Service",    "", ScopedItemOptions.ReadOnly | ScopedItemOptions.AllScope),
                     new SessionStateAliasEntry("sv",
                         "Set-Variable",    "", ScopedItemOptions.ReadOnly | ScopedItemOptions.AllScope),
-// Porting note: #if !LINUX is used to disable alises for cmdlets which conflict with Linux / OS X
-#if !LINUX
+// Porting note: #if !UNIX is used to disable alises for cmdlets which conflict with Linux / OS X
+#if !UNIX
                     // ac is a native command on OS X
                     new SessionStateAliasEntry("ac",
                         "Add-Content",     "", ScopedItemOptions.ReadOnly | ScopedItemOptions.AllScope),
@@ -5475,7 +5475,7 @@ end
         internal const string DefaultMoreFunctionText = @"
 param([string[]]$paths)
 # Nano needs to use Unicode, but Windows and Linux need the default
-$OutputEncoding = if ($IsWindows -and $IsCore) {
+$OutputEncoding = if ($IsWindows -and $IsCoreCLR) {
     [System.Text.Encoding]::Unicode
 } else {
     [System.Console]::OutputEncoding
@@ -5510,14 +5510,14 @@ if($paths) {
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("more", DefaultMoreFunctionText, isProductCode: true),
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("help", GetHelpPagingFunctionText(), isProductCode: true),
             // Porting note: we remove mkdir on Linux because it is a conflict
-            #if !LINUX
+            #if !UNIX
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("mkdir", GetMkdirFunctionText(), isProductCode: true),
             #endif
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("Get-Verb", GetGetVerbText(), isProductCode: true),
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("oss", GetOSTFunctionText(), isProductCode: true),
 
             // Porting note: we remove the drive functions from Linux because they make no sense
-            #if !LINUX
+            #if !UNIX
             // Default drives
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("A:", DefaultSetDriveFunctionText, SetDriveScriptBlock),
             SessionStateFunctionEntry.GetDelayParsedFunctionEntry("B:", DefaultSetDriveFunctionText, SetDriveScriptBlock),
@@ -5698,11 +5698,7 @@ if($paths) {
             {
                 AssemblyName assemblyName = ClrFacade.GetAssemblyName(psSnapInInfo.AbsoluteModulePath);
 
-                // Porting note: the snapins still require 'ProcessorArchitecture=MSIL' in
-                // the strong name, which is not in the strong name of assemblies created
-                // by dotnet-cli
-                if (!Platform.IsCore &&
-                    !string.Equals(assemblyName.FullName, psSnapInInfo.AssemblyName, StringComparison.OrdinalIgnoreCase))
+                if (!string.Equals(assemblyName.FullName, psSnapInInfo.AssemblyName, StringComparison.OrdinalIgnoreCase))
                 {
                     string message = StringUtil.Format(ConsoleInfoErrorStrings.PSSnapInAssemblyNameMismatch, psSnapInInfo.AbsoluteModulePath, psSnapInInfo.AssemblyName);
                     _PSSnapInTracer.TraceError(message);

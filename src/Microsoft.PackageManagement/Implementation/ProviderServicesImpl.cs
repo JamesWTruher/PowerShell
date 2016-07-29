@@ -177,7 +177,7 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
                 Debug(request, "Calling 'ProviderService::IsSignedAndTrusted, '{0}'", filename);
 
                 // we are not using this function anywhere
-#if !LINUX
+#if !UNIX
                 var wtd = new WinTrustData(filename);
 
                 var result = NativeMethods.WinVerifyTrust(new IntPtr(-1), new Guid("{00AAC56B-CD44-11d0-8CC2-00C04FC295EE}"), wtd);
@@ -190,9 +190,14 @@ namespace Microsoft.PackageManagement.Internal.Implementation {
         public int StartProcess(string filename, string arguments, bool requiresElevation, out string standardOutput, IRequest requestObject) {
             Process p = new Process();
 
-            if (requiresElevation) {
+#if !CORECLR
+            if (requiresElevation)
+            {
                 p.StartInfo.UseShellExecute = true;
-            } else {
+            }
+            else
+#endif
+            {
                 p.StartInfo.UseShellExecute = false;
                 p.StartInfo.RedirectStandardOutput = true;
             }

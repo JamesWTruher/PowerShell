@@ -1,4 +1,4 @@
-Describe "PSVersionTable" {
+Describe "PSVersionTable" -Tags "CI" {
     It "Should have version table entries" {
 	$PSVersionTable.Count | Should Be 9
     }
@@ -19,16 +19,7 @@ Describe "PSVersionTable" {
         $PSVersionTable.GitCommitId | Should not match "powershell.version"
     }
 
-    It "Should have the correct edition" -Skip:(!$IsCore) {
-	$expected =
-	if ($IsLinux -Or $IsOSX) {
-	    "Linux"
-	} elseif ($IsWindows) {
-	    "Core"
-	} else {
-	    throw [PlatformNotSupportedException]
-	}
-
-	$PSVersionTable["PSEdition"] | Should Be $expected
+    It "Should have the correct edition" -Skip:(!$IsCoreCLR) {
+	$PSVersionTable["PSEdition"] | Should Be "PowerShellCore"
     }
 }

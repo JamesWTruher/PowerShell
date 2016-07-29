@@ -1,11 +1,11 @@
-﻿if ($IsWindows -and !$IsCore) {
+﻿if ($IsWindows -and !$IsCoreCLR) {
   #check to see whether we're running as admin in Windows...
   $windowsIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $windowsPrincipal = new-object 'Security.Principal.WindowsPrincipal' $windowsIdentity
   if ($windowsPrincipal.IsInRole("Administrators") -eq $true) {
       $NonWinAdmin=$false
   } else {$NonWinAdmin=$true}
-  Describe "New-EventLog cmdlet tests" -Tags DRT {
+  Describe "New-EventLog cmdlet tests" -Tags "CI" {
     BeforeEach{
       Remove-EventLog -LogName TestLog -ea Ignore
       {New-EventLog -LogName TestLog -Source TestSource -ea Stop}                              | Should Not Throw                            

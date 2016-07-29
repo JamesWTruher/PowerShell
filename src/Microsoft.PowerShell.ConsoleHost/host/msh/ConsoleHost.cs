@@ -286,14 +286,12 @@ namespace Microsoft.PowerShell
 
 
 
+#if UNIX
         /// <summary>
-        /// 
+        ///
         /// The break handler for the program.  Dispatches a break event to the current Executor.
-        /// 
+        ///
         /// </summary>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-#if LINUX
         private static void MyBreakHandler(object sender, ConsoleCancelEventArgs args)
         {
             // Set the Cancel property to true to prevent the process from terminating.
@@ -310,6 +308,13 @@ namespace Microsoft.PowerShell
             }
         }
 #else
+        /// <summary>
+        ///
+        /// The break handler for the program.  Dispatches a break event to the current Executor.
+        ///
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         private static bool MyBreakHandler(ConsoleControl.ConsoleBreakSignal signal)
         {
             switch (signal)
@@ -461,7 +466,7 @@ namespace Microsoft.PowerShell
             // call the console APIs directly, instead of ui.rawui.FlushInputHandle, as ui may be finalized
             // already if this thread is lagging behind the main thread.
 
-#if !LINUX
+#if !UNIX
             ConsoleHandle handle = ConsoleControl.GetConioDeviceHandle();
             ConsoleControl.FlushConsoleInputBuffer(handle);
 #endif
@@ -1059,7 +1064,7 @@ namespace Microsoft.PowerShell
 
         private void BindBreakHandler()
         {
-#if LINUX
+#if UNIX
             Console.CancelKeyPress += new ConsoleCancelEventHandler(MyBreakHandler);
 #else
             breakHandlerGcHandle = GCHandle.Alloc(new ConsoleControl.BreakHandler(MyBreakHandler));
@@ -1118,7 +1123,7 @@ namespace Microsoft.PowerShell
         {
             if (!isDisposed)
             {
-#if !LINUX
+#if !UNIX
                 Dbg.Assert(breakHandlerGcHandle != null, "break handler should be set");
                 ConsoleControl.RemoveBreakHandler();
                 breakHandlerGcHandle.Free();
@@ -2867,7 +2872,7 @@ namespace Microsoft.PowerShell
             /// </summary>
             private RunspaceRef runspaceRef;
 
-#if !LINUX
+#if !UNIX
         private GCHandle breakHandlerGcHandle;
 #endif
         private System.Threading.Thread breakHandlerThread;

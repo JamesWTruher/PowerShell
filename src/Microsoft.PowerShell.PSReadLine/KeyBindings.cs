@@ -114,6 +114,25 @@ namespace Microsoft.PowerShell
         private Dictionary<ConsoleKeyInfo, KeyHandler> _dispatchTable;
         private Dictionary<ConsoleKeyInfo, Dictionary<ConsoleKeyInfo, KeyHandler>> _chordDispatchTable; 
 
+        /// <summary>
+        /// Helper to set bindings based on EditMode
+        /// </summary>
+        void SetDefaultBindings(EditMode editMode)
+        {
+            switch (editMode)
+            {
+                case EditMode.Emacs:
+                    SetDefaultEmacsBindings();
+                    break;
+                case EditMode.Vi:
+                    SetDefaultViBindings();
+                    break;
+                case EditMode.Windows:
+                    SetDefaultWindowsBindings();
+                    break;
+            }
+        }
+
         void SetDefaultWindowsBindings()
         {
             _dispatchTable = new Dictionary<ConsoleKeyInfo, KeyHandler>(new ConsoleKeyInfoComparer())
@@ -142,7 +161,7 @@ namespace Microsoft.PowerShell
                 { Keys.CtrlSpace,              MakeKeyHandler(MenuComplete,              "MenuComplete") },
                 { Keys.Tab,                    MakeKeyHandler(TabCompleteNext,           "TabCompleteNext") },
                 { Keys.ShiftTab,               MakeKeyHandler(TabCompletePrevious,       "TabCompletePrevious") },
-#if !CORECLR
+#if !UNIX
                 { Keys.VolumeDown,             MakeKeyHandler(Ignore,                    "Ignore") },
                 { Keys.VolumeUp,               MakeKeyHandler(Ignore,                    "Ignore") },
                 { Keys.VolumeMute,             MakeKeyHandler(Ignore,                    "Ignore") },
@@ -181,7 +200,7 @@ namespace Microsoft.PowerShell
                 { Keys.ShiftF3,                MakeKeyHandler(CharacterSearchBackward,   "CharacterSearchBackward") },
                 { Keys.F8,                     MakeKeyHandler(HistorySearchBackward,     "HistorySearchBackward") },
                 { Keys.ShiftF8,                MakeKeyHandler(HistorySearchForward,      "HistorySearchForward") },
-#if !CORECLR
+#if !UNIX
                 { Keys.PageUp,                 MakeKeyHandler(ScrollDisplayUp,           "ScrollDisplayUp") },
                 { Keys.PageDown,               MakeKeyHandler(ScrollDisplayDown,         "ScrollDisplayDown") },
                 { Keys.CtrlPageUp,             MakeKeyHandler(ScrollDisplayUpLine,       "ScrollDisplayUpLine") },
@@ -265,7 +284,7 @@ namespace Microsoft.PowerShell
                 { Keys.AltPeriod,       MakeKeyHandler(YankLastArg,          "YankLastArg") },
                 { Keys.AltUnderbar,     MakeKeyHandler(YankLastArg,          "YankLastArg") },
                 { Keys.AltCtrlY,        MakeKeyHandler(YankNthArg,           "YankNthArg") },
-#if !CORECLR
+#if !UNIX
                 { Keys.VolumeDown,      MakeKeyHandler(Ignore,               "Ignore") },
                 { Keys.VolumeUp,        MakeKeyHandler(Ignore,               "Ignore") },
                 { Keys.VolumeMute,      MakeKeyHandler(Ignore,               "Ignore") },

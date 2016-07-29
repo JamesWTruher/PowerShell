@@ -25,7 +25,7 @@ namespace TypeCatalogParser
             var outputPath = "../TypeCatalogGen/powershell.inc";
 
             // Get a context for our top level project
-            var context = ProjectContext.Create("../powershell", NuGetFramework.Parse("netcoreapp1.0"));
+            var context = ProjectContext.Create("../Microsoft.PowerShell.SDK", NuGetFramework.Parse("netstandard1.6"));
 
             System.IO.File.WriteAllLines(outputPath,
                                          // Get the target for the current runtime

@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !UNIX
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
@@ -6,6 +8,8 @@ using System.Management.Automation;
 using Microsoft.PackageManagement.Provider.Utility;
 using System.Reflection;
 using System.Globalization;
+
+using SemanticVersion = Microsoft.PackageManagement.Provider.Utility.SemanticVersion;
 
 namespace Microsoft.PackageManagement.PackageSourceListProvider
 {
@@ -440,3 +444,5 @@ namespace Microsoft.PackageManagement.PackageSourceListProvider
         }
     } 
 }
+
+#endif

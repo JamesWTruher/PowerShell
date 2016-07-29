@@ -3,6 +3,8 @@
     "version": "1.0.0-*",
 
     "buildOptions": {
+        "nowarn": [ "CS1570" ],
+        "xmlDoc": true,
         "keyFile": "../signing/visualstudiopublic.snk",
         "delaySign": true,
         "publicSign": false,
@@ -13,7 +15,7 @@
     "configurations": {
         "Linux": {
             "buildOptions": {
-                "define": [ "LINUX" ]
+                "define": [ "UNIX" ]
             }
         }
     },
@@ -31,7 +33,11 @@
                     "exclude": [
                         "security/CertificateCommands.cs",
                         "security/CmsCommands.cs",
-                        "singleshell/installer/MshSecurityMshSnapin.cs"
+                        "singleshell/installer/MshSecurityMshSnapin.cs",
+
+                        "gen/CertificateCommands.cs",
+                        "gen/CmsCommands.cs",
+                        "gen/SecurityMshSnapinResources.cs"
                     ]
                 },
                 "embed": {

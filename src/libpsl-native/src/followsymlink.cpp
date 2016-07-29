@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include "followsymlink.h"
+#include "issymlink.h"
 
 //! @brief Followsymlink determines target path of a sym link
 //!
@@ -36,18 +37,31 @@
 
 char* FollowSymLink(const char* fileName)
 {
-    errno = 0;  
+    errno = 0;
 
-    // Check parameters
     if (!fileName)
     {
         errno = ERROR_INVALID_PARAMETER;
         return NULL;
     }
 
-    char buffer[PATH_MAX];
-    ssize_t sz = readlink(fileName, buffer, PATH_MAX);
+    // return null for non symlinks
+    if (!IsSymLink(fileName))
+    {
+        return NULL;
+    }
 
+    // attempt to resolve with the absolute file path
+    char buffer[PATH_MAX];
+    char* realPath = realpath(fileName, buffer);
+
+    if (realPath)
+    {
+        return strndup(realPath, strlen(realPath) + 1);
+    }
+
+    // if the path wasn't resolved, use readlink
+    ssize_t sz = readlink(fileName, buffer, PATH_MAX);
     if  (sz == -1)
     {
         switch(errno)
@@ -60,7 +74,6 @@ char* FollowSymLink(const char* fileName)
             break;
         case EINVAL:
             errno = ERROR_INVALID_NAME;
-            break;
         case EIO:
             errno = ERROR_GEN_FAILURE;
             break;
@@ -82,6 +95,7 @@ char* FollowSymLink(const char* fileName)
         default:
             errno = ERROR_INVALID_FUNCTION;
         }
+
         return NULL;
     }
 

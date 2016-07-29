@@ -1,4 +1,4 @@
-Describe "PSReadLine" {
+Describe "PSReadLine" -tags "CI" {
     BeforeAll {
         if (Get-Module PSReadLine) {
             $originalEditMode = (Get-PSReadLineOption).EditMode
@@ -11,6 +11,16 @@ Describe "PSReadLine" {
         $module = Get-Module PSReadLine
         $module.Name | Should Be "PSReadLine"
         $module.Version | Should Be "1.2"
+    }
+
+    It "Should use Emacs Bindings on Linux and OS X" -skip:$IsWindows {
+        (Get-PSReadLineOption).EditMode | Should Be Emacs
+        (Get-PSReadlineKeyHandler | where { $_.Key -eq "Ctrl+A" }).Function | Should Be BeginningOfLine
+    }
+
+    It "Should use Windows Bindings on Windows" -skip:(-not $IsWindows) {
+        (Get-PSReadLineOption).EditMode | Should Be Windows
+        (Get-PSReadlineKeyHandler | where { $_.Key -eq "Ctrl+A" }).Function | Should Be SelectAll
     }
 
     It "Should set the edit mode" {

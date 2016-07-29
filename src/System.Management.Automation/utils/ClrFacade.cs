@@ -344,6 +344,10 @@ namespace System.Management.Automation
         {
             get
             {
+                if (PowerShellAssemblyLoadContext.Instance == null)
+                {
+                    throw new InvalidOperationException(ParserStrings.LoadContextNotInitialized);
+                }
                 return PowerShellAssemblyLoadContext.Instance;
             }
         }
@@ -513,15 +517,6 @@ namespace System.Management.Automation
         }
 
         /// <summary>
-        /// Facade for Directory.GetParent(string)
-        /// </summary>
-        internal static DirectoryInfo GetParent(string path)
-        {
-            // Porting note: this is in recent CoreCLR
-            return Directory.GetParent(path);
-        }
-
-        /// <summary>
         /// Facade for the PowerShell base name
         /// </summary>
         internal static string GetPowerShellBaseName()
@@ -532,7 +527,6 @@ namespace System.Management.Automation
             return "WindowsPowerShell";
 #endif
         }
-
 
         /// <summary>
         /// Facade for ManagementDateTimeConverter.ToDmtfDateTime(DateTime)

@@ -3,6 +3,8 @@
     "version": "1.0.0-*",
 
     "buildOptions": {
+        "nowarn": [ "CS1570", "CS1734" ],
+        "xmlDoc": true,
         "keyFile": "../signing/visualstudiopublic.snk",
         "delaySign": true,
         "publicSign": false,
@@ -13,13 +15,13 @@
     "configurations": {
         "Linux": {
             "buildOptions": {
-                "define": [ "LINUX" ]
+                "define": [ "UNIX" ]
             }
         }
     },
 
     "dependencies": {
-        "Microsoft.Management.Infrastructure": "1.0.0-*"
+        "Microsoft.Management.Infrastructure": "1.0.0-rc2"
     },
 
     "frameworks": {
@@ -123,7 +125,10 @@
                         "utils/WindowsErrorReporting.cs",
                         "utils/perfCounters/CounterSetInstanceBase.cs",
                         "utils/perfCounters/CounterSetRegistrarBase.cs",
-                        "utils/perfCounters/PSPerfCountersMgr.cs"
+                        "utils/perfCounters/PSPerfCountersMgr.cs",
+
+                        "gen/CoreMshSnapinResources.cs",
+                        "gen/ErrorPackageRemoting.cs"
                     ]
                 },
                 "embed": {
@@ -171,6 +176,9 @@
         },
         "net451": {
             "buildOptions": {
+                "compile": {
+                    "exclude": [ "gen/CoreClrStubResources.cs" ]
+                },
                 "embed": {
                     "exclude": [ "resources/CoreClrStubResources.resx" ]
                 }

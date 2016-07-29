@@ -1,11 +1,11 @@
-if ($IsWindows -and !$IsCore) {
+if ($IsWindows -and !$IsCoreCLR) {
   #check to see whether we're running as admin in Windows...
   $windowsIdentity = [Security.Principal.WindowsIdentity]::GetCurrent()
   $windowsPrincipal = new-object 'Security.Principal.WindowsPrincipal' $windowsIdentity
   if ($windowsPrincipal.IsInRole("Administrators") -eq $true) {
       $NonWinAdmin=$false
   } else {$NonWinAdmin=$true}
-  Describe "Clear-EventLog cmdlet tests" -Tags:DRT {
+  Describe "Clear-EventLog cmdlet tests" -Tags "CI" {
     #DRT - CmdLet is NYI - change to -Skip:($NonWinAdmin) when implemented
     It "should be able to Clear-EventLog" -Pending:($True -Or $NonWinAdmin) {
       Remove-EventLog -LogName TestLog -ea Ignore

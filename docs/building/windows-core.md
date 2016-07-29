@@ -5,6 +5,8 @@ This guide will walk you through building PowerShell on Windows,
 targetting .NET Core. We'll start by showing how to set up your
 environment from scratch.
 
+You can also [build PowerShell for Full .NET framework](windows-full.md) on Windows.
+
 Environment
 ===========
 
@@ -24,9 +26,8 @@ repository and `cd`ed into it.
 .NET CLI
 --------
 
-We use the [.NET Command Line Interface][dotnet-cli] (`dotnet`) to
-build PowerShell. The `Start-PSBootstrap` function will automatically
-install it and add it to your path:
+We use the [.NET Command Line Interface][dotnet-cli] (`dotnet`) to build PowerShell.
+The `Start-PSBootstrap` function will automatically install it and add it to your path:
 
 ```powershell
 Import-Module ./build.psm1
@@ -40,8 +41,8 @@ Invoke-WebRequest -Uri https://raw.githubusercontent.com/dotnet/cli/rel/1.0.0/sc
 ./install.ps1
 ```
 
-If you have any problems installing `dotnet`, please see their
-[documentation][cli-docs].
+If you have any problems installing `dotnet`,
+please see their [documentation][cli-docs].
 
 If you are using Windows 7, Windows Server 2008 or Windows Server 2012
 you will also need to install

@@ -19,14 +19,20 @@ dotnet-uninstall-debian-packages.sh
 # VS auto-generated files for csproj files
 *.csproj.user
 
+# Project Rider IDE files
+.idea.powershell/
+
 # Ignore executables
 *.exe
 *.msi
 *.appx
 
+# Ignore binaries and symbols
+*.pdb
+*.dll
+
 # Ignore packages
 *.deb
-*.msi
 *.zip
 *.rpm
 *.pkg
@@ -39,3 +45,9 @@ powershell.version
 
 # resgen output
 gen
+
+# Per repo profile
+.profile.ps1
+
+#VS Code files
+/.vscode
