@@ -249,9 +249,7 @@ namespace System.Management.Automation
             {
                 return result;
             }
-#endif
-
-
+            
             // The default keys aren't installed, so try and use the entry assembly to
             // get the application base. This works for managed apps like minishells...
             Assembly assem = Assembly.GetEntryAssembly();
