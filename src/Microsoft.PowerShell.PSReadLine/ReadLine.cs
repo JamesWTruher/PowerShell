@@ -560,10 +560,23 @@ namespace Microsoft.PowerShell
             _consoleBuffer = ReadBufferLines(_initialY, 1 + Options.ExtraPromptLineCount);
 #if UNIX // TODO: not necessary if ReadBufferLines worked, or if rendering worked on spans instead of complete lines
             string newPrompt = GetPrompt();
+            Options.ExtraPromptLineCount = (newPrompt.Length) / (_console.BufferWidth ) + 1;
+            if (Options.ExtraPromptLineCount == 0 ) {Options.ExtraPromptLineCount = 1;}
+           _consoleBuffer = ReadBufferLines(_initialY, Options.ExtraPromptLineCount);
+                        
+            for (int i=0; i<newPrompt.Length; ++i)
+            {        
+                _consoleBuffer[i].UnicodeChar = newPrompt[i];
+            }            
+
+            Options.ExtraPromptLineCount = 0;
+/******************Original***************************           
+            string newPrompt = GetPrompt();
             for (int i=0; i<newPrompt.Length; ++i)
             {
                 _consoleBuffer[i].UnicodeChar = newPrompt[i];
             }
+******************End Original**********************/
 #endif
             _lastRenderTime = Stopwatch.StartNew();
 

@@ -1033,12 +1033,17 @@ namespace Microsoft.PowerShell.Internal
                 ScrollBuffer(scrollCount);
                 top -= scrollCount;
             }
-
             ConsoleColor foregroundColor = Console.ForegroundColor;
             ConsoleColor backgroundColor = Console.BackgroundColor;
 
-            Console.SetCursorPosition(0, (top>=0) ? top : 0);
-
+            if (bufferLineCount > 1)
+            {
+                Console.SetCursorPosition(0, top - 1);
+            }
+            else 
+            {
+                Console.SetCursorPosition(0, (top>=0) ? top : 0);
+            }
             for (int i = 0; i < buffer.Length; ++i)
             {
                 // TODO: use escape sequences for better perf

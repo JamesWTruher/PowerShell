@@ -113,10 +113,17 @@ namespace Microsoft.PowerShell
                     {
                         int consoleBufferOffset = ConvertOffsetToConsoleBufferOffset(text.Length, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
                         // Need to erase the extra lines that we won't draw again
-                        for (int i = consoleBufferOffset; i < _consoleBuffer.Length; i++)
-                        {
-                            _consoleBuffer[i] = _space;
+                        /*for (int i = consoleBufferOffset; i < _consoleBuffer.Length; i++)
+                        {                            
+                            _consoleBuffer[i] = _space;                            
                         }
+                        */
+                       
+                        for (int i = bufferWidth; i < _consoleBuffer.Length; i++)
+                        {                            
+                            _consoleBuffer[i] = _space;                            
+                        }
+
                         _console.WriteBufferLines(_consoleBuffer, ref _initialY);
                     }
                     _consoleBuffer = newBuffer;
