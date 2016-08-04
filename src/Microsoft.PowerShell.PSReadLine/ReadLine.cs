@@ -568,10 +568,10 @@ namespace Microsoft.PowerShell
             {        
                 _consoleBuffer[i].UnicodeChar = newPrompt[i];
             }            
-
+            
             Options.ExtraPromptLineCount = 0;
-/******************Original***************************           
-            string newPrompt = GetPrompt();
+/******************Original***************************     
+            string newPrompt = GetPrompt();            
             for (int i=0; i<newPrompt.Length; ++i)
             {
                 _consoleBuffer[i].UnicodeChar = newPrompt[i];
