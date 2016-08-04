@@ -83,11 +83,9 @@ namespace System.Management.Automation.Runspaces
             {
                 tempVersion = PSVersionInfo.PSVersion;
             }
+            
             processArguments = string.Format(CultureInfo.InvariantCulture,
-                       "-Version {0}", new Version(tempVersion.Major, tempVersion.Minor));
-
-            processArguments = string.Format(CultureInfo.InvariantCulture,
-                "{0} -s -NoLogo -NoProfile", processArguments);
+                " -s -NoLogo -NoProfile");
 
             if (initializationScript != null)
             {
