@@ -106,13 +106,11 @@ namespace Microsoft.PowerShell
                 _console.StartRender();
                 bufferLineCount = ConvertOffsetToCoordinates(text.Length).Y - _initialY + 1 + statusLineCount;
                 
-                if (_consoleBuffer.Length != bufferLineCount * (bufferWidth -1) )
-                {
+                if (_consoleBuffer.Length != Options.ExtraPromptLineCount * (bufferWidth) ) {
                     var newBuffer = new BufferChar[bufferLineCount * bufferWidth];
                     Array.Copy(_consoleBuffer, newBuffer, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
-                    if (_consoleBuffer.Length > bufferLineCount * bufferWidth)
-                    {
-                        int consoleBufferOffset = ConvertOffsetToConsoleBufferOffset(text.Length, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
+                    //if (_consoleBuffer.Length > Options.ExtraPromptLineCount * bufferWidth) {
+                    //    int consoleBufferOffset = ConvertOffsetToConsoleBufferOffset(text.Length, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
                         // Need to erase the extra lines that we won't draw again
                         /*for (int i = consoleBufferOffset; i < _consoleBuffer.Length; i++)
                         {                            
@@ -125,14 +123,20 @@ namespace Microsoft.PowerShell
                             _consoleBuffer[i] = _space;                            
                        }
                        */
-                        _console.WriteBufferLines(_consoleBuffer, ref _initialY);
-                        
-                    }
-                    _consoleBuffer = newBuffer;
+                       
+                       //_console.WriteBufferLines(_consoleBuffer, ref _initialY);
+                       _consoleBuffer = newBuffer;
+                         
+                    //}
+                   // else
+                //    {
+                        //_console.WriteBufferLines(_consoleBuffer, ref _initialY);
+                //    }
                 }
+    
                 
                 for (int i = 0; i < text.Length; i++)
-                {
+                {                    
                     totalBytes = totalBytes % bufferWidth;
                     if (!afterLastToken)
                     {
@@ -316,38 +320,39 @@ namespace Microsoft.PowerShell
 
             if (!rendered)
             {
-                if (bufferLineCount > 1)
-                {
-                    //var newBuffer = new BufferChar[bufferLineCount * bufferWidth];
-                    //Array.Copy(_consoleBuffer, newBuffer, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
-                   // if (_consoleBuffer.Length > bufferLineCount * bufferWidth)
-                   // {
-                      //  int consoleBufferOffset = ConvertOffsetToConsoleBufferOffset(text.Length, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
-                        // Need to erase the extra lines that we won't draw again
-                        /*for (int i = 0; i < _consoleBuffer.Length - bufferWidth; i++)
+               // if (bufferLineCount > 1) {
+                    var newBuffer = new BufferChar[bufferLineCount * bufferWidth];
+                    Array.Copy(_consoleBuffer, newBuffer, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
+                    if (_consoleBuffer.Length > bufferLineCount * bufferWidth ) 
+                    {
+                        //int consoleBufferOffset = ConvertOffsetToConsoleBufferOffset(text.Length, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
+                        //Need to erase the extra lines that we won't draw again
+                       /* for (int i = 0; i < _consoleBuffer.Length - bufferWidth; i++)
                         {                            
                             _consoleBuffer[i] = _space;                            
                         }
-                      */ 
                        
-                     //  for (int i = bufferWidth; i > 0; i--)
-                      // {                            
-                        //    _consoleBuffer[i] = _space;                            
-                     //  }
-                      
+                       for (int i = bufferWidth; i > 0; i--)
+                       {                            
+                            _consoleBuffer[i] = _space;                            
+                       }
+                      */
                         _console.WriteBufferLines(_consoleBuffer, ref _initialY);
-                        
-                   //}
-                   // _consoleBuffer = newBuffer;
-                }
+                        _consoleBuffer = newBuffer;
+                   }
+                    
+                
                 else
-                {
-                    _console.WriteBufferLines(_consoleBuffer, ref _initialY);
+                {   
+                    //_console.WriteBufferLines(_consoleBuffer, ref _initialY);
+                    //var newBuff = new BufferChar[bufferLineCount * bufferWidth];
+                    //Array.Copy(_consoleBuffer, newBuff, _initialX + (Options.ExtraPromptLineCount * _bufferWidth));
+                    //_console.WriteBufferLines(newBuff, ref _initialY);          
                 }
             }
 
             PlaceCursor();
-
+            
             if ((_initialY + bufferLineCount) > (_console.WindowTop + _console.WindowHeight))
             {
 #if !UNIX // TODO: verify this isn't necessary for LINUX
