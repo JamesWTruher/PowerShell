@@ -18,6 +18,7 @@ install:
   - git config --global url.git@github.com:.insteadOf https://github.com/
   - git submodule update --init
   - ps: Import-Module .\build.psm1; Start-PSBootstrap -Force
+  - ps: Write-Verbose "Windows Version: $(Get-Item $env:windir\System32\ntdll.dll | % VersionInfo | % ProductVersion)" -Verbose
 
 build_script:
   - ps: |
